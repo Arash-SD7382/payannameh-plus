@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { groups } from '../data/services';
+const all = (await getCollection('projects')).sort((a,b)=>+b.data.date-+a.data.date);
+const featured = all.filter(p=>p.data.featured).slice(0,3);
+const latest = all.slice(0,6);
+---
+<Base title="Payannameh Plus">
+<section class="hero"><div class="wrap">
+<div class="rule"></div>
+<h1>Academic and technical work, documented step by step.</h1>
+<p>Thesis, articles, research, data and programming projects, written with academic care. Read how each project was planned, built and delivered.</p>
+<div class="actions"><a class="btn" href="/projects">View projects</a><a class="btn ghost" href="/services">Our services</a></div>
+</div></section>
+<section class="soft"><div class="wrap">
+<h2>What we help with</h2>
+<div class="grid">{groups.map(g => <div class="svc"><h3>{g.name}</h3><ul>{g.items.slice(0,4).map(i=><li>{i}</li>)}</ul></div>)}</div>
+<p style="margin-top:1.5rem"><a href="/services">See all services</a></p>
+</div></section>
+{featured.length > 0 && <section><div class="wrap"><h2>Featured projects</h2>
+<div class="grid">{featured.map(p => <ProjectCard p={p} />)}</div></div></section>}
+<section class={featured.length>0?'soft':''}><div class="wrap"><h2>Latest projects</h2>
+{latest.length ? <div class="grid">{latest.map(p => <ProjectCard p={p} />)}</div> : <div class="empty">No projects yet. New ones will appear here.</div>}
+<p style="margin-top:1.5rem"><a href="/projects">Browse all projects</a></p></div></section>
+</Base>

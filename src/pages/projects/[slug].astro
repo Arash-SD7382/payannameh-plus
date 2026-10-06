@@ -1,0 +1,34 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+export async function getStaticPaths() {
+  const all = (await getCollection('projects')).sort((a,b)=>+b.data.date-+a.data.date);
+  return all.map((p,i)=>({ params:{slug:p.slug}, props:{ p, newer: all[i-1], older: all[i+1], related: all.filter(x=>x.slug!==p.slug && x.data.category===p.data.category).slice(0,3) } }));
+}
+const { p, newer, older, related } = Astro.props;
+const { Content, headings } = await p.render();
+const toc = headings.filter(h=>h.depth===2);
+const v = p.data.video || '';
+const yt = v.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/)?.[1];
+const vm = v.match(/vimeo\.com\/(\d+)/)?.[1];
+const embed = yt ? `https://www.youtube-nocookie.com/embed/${yt}` : vm ? `https://player.vimeo.com/video/${vm}` : null;
+const d = p.data.date.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+const mins = Math.max(1, Math.round(p.body.split(/\s+/).length / 200));
+const url = new URL(`/projects/${p.slug}`, Astro.site).href;
+const jsonld = { '@context':'https://schema.org','@type':'Article',headline:p.data.title,description:p.data.excerpt,datePublished:p.data.date.toISOString(),author:{'@type':'Organization',name:'Payannameh Plus'},publisher:{'@type':'Organization',name:'Payannameh Plus'},mainEntityOfPage:url, ...(p.data.cover?{image:p.data.cover}:{}) };
+---
+<Base title={p.data.title} description={p.data.excerpt} jsonld={jsonld} image={p.data.cover || '/images/logo.png'}>
+<article><section style="padding-bottom:var(--s3)"><div class="wrap article-head">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/projects">Projects</a> / <a href={`/projects?cat=${encodeURIComponent(p.data.category)}`}>{p.data.category}</a></nav>
+<h1>{p.data.title}</h1><p class="muted" style="font-size:1.15rem">{p.data.excerpt}</p>
+<div class="meta"><span>By Payannameh Plus</span><span>{d}</span><span>{mins} min read</span></div>
+{p.data.videoFile ? <video class="video" controls preload="metadata" playsinline poster={p.data.cover}><source src={p.data.videoFile} type="video/mp4"></video> : embed ? <iframe class="video" src={embed} title={`Video: ${p.data.title}`} loading="lazy" allowfullscreen></iframe> : p.data.cover && <img class="cover" style="border-radius:var(--r)" src={p.data.cover} alt={p.data.coverAlt}>}
+</div></section>
+<section style="padding-top:var(--s3)"><div class="wrap layout">
+<div><div class="prose"><Content /></div>
+<div class="pn">{older ? <a href={`/projects/${older.slug}`}>← Previous<br><strong>{older.data.title}</strong></a> : <span></span>}{newer ? <a href={`/projects/${newer.slug}`} style="text-align:right">Next →<br><strong>{newer.data.title}</strong></a> : <span></span>}</div></div>
+{toc.length > 1 && <aside class="toc" aria-label="Table of contents"><strong>On this page</strong><ol>{toc.map(h=><li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></aside>}
+</div></section></article>
+{related.length > 0 && <section class="soft"><div class="wrap"><h2>Related projects</h2><div class="grid">{related.map(r=><ProjectCard p={r} />)}</div></div></section>}
+</Base>

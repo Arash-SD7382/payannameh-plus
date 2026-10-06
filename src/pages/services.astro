@@ -1,0 +1,10 @@
+---
+import Base from '../layouts/Base.astro';
+import { groups, contact } from '../data/services';
+---
+<Base title="Services" description="Writing, research, editing, data and programming services.">
+<section><div class="wrap">
+<h1>Services</h1><p class="muted" style="max-width:60ch">From the first draft to the final formatting, we support academic and technical work in four areas.</p>
+<div class="grid" style="margin-top:2rem">{groups.map(g => <div class="svc"><h2 style="font-size:1.3rem">{g.name}</h2><ul>{g.items.map(i=><li>{i}</li>)}</ul></div>)}</div>
+<div class="actions"><a class="btn" href={`tel:${contact.phone}`}>Call {contact.phone}</a></div>
+</div></section></Base>

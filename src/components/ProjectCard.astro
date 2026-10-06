@@ -1,0 +1,11 @@
+---
+const { p } = Astro.props;
+const d = p.data.date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+const mins = Math.max(1, Math.round(p.body.split(/\s+/).length / 200));
+---
+<a class="card" href={`/projects/${p.slug}`} data-title={p.data.title.toLowerCase()} data-cat={p.data.category} data-text={(p.data.excerpt).toLowerCase()} data-date={p.data.date.getTime()}>
+  {p.data.cover ? <img class="cover" src={p.data.cover} alt={p.data.coverAlt} loading="lazy" width="640" height="360"> : <div class="cover" role="presentation"></div>}
+  <div class="body"><span class="badge" style="align-self:flex-start">{p.data.category}</span>
+  <h3>{p.data.title}</h3><p class="muted sm" style="margin:0">{p.data.excerpt}</p>
+  <p class="muted sm" style="margin:0">{d} · {mins} min read</p></div>
+</a>
