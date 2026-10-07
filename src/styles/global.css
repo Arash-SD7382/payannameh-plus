@@ -36,7 +36,7 @@ nav.main a:hover,nav.main a[aria-current]{border-color:var(--gold)}
 .card{display:flex;flex-direction:column;gap:.5rem;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-decoration:none;color:var(--text)}
 .card .body{padding:var(--s2) var(--s3) var(--s3);display:flex;flex-direction:column;gap:.5rem}.card h3{margin:0}
 .card:hover{border-color:var(--blue)}
-.cover{aspect-ratio:16/9;background:linear-gradient(135deg,var(--navy),var(--blue));object-fit:cover;width:100%}
+.cover{aspect-ratio:16/9;height:auto;background:linear-gradient(135deg,var(--navy),var(--blue));object-fit:cover;width:100%}
 .svc{padding:var(--s3);border-top:4px solid var(--gold);background:var(--bg);border-radius:var(--r);border-left:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
 .svc ul{margin:0;padding-left:1.1rem}.svc li{margin:.25rem 0}
 .feat{display:grid;gap:var(--s3);grid-template-columns:1.4fr 1fr}@media(max-width:800px){.feat{grid-template-columns:1fr}}
