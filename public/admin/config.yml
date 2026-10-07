@@ -18,7 +18,6 @@ collections:
       - { label: Short summary, name: excerpt, widget: text }
       - { label: Cover image, name: cover, widget: image, required: false }
       - { label: Cover image description, name: coverAlt, widget: string, required: false }
-      - { label: Video link (YouTube or Vimeo), name: video, widget: string, required: false }
-      - { label: "Uploaded video (MP4 under 25 MB)" , name: videoFile, widget: file, required: false, media_folder: /public/videos, public_folder: /videos, hint: "Optional. For bigger videos use the link above." }
+      - { label: "Video link (YouTube, Vimeo or Aparat)", name: video, widget: string, required: false, hint: "Paste the video page link, for example https://www.aparat.com/v/xxxxx" }
       - { label: Featured on home page, name: featured, widget: boolean, default: false }
       - { label: Project story and steps, name: body, widget: markdown }

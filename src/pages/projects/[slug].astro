@@ -10,9 +10,10 @@ const { p, newer, older, related } = Astro.props;
 const { Content, headings } = await p.render();
 const toc = headings.filter(h=>h.depth===2);
 const v = p.data.video || '';
-const yt = v.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/)?.[1];
+const yt = v.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/)?.[1];
 const vm = v.match(/vimeo\.com\/(\d+)/)?.[1];
-const embed = yt ? `https://www.youtube-nocookie.com/embed/${yt}` : vm ? `https://player.vimeo.com/video/${vm}` : null;
+const ap = v.match(/aparat\.com\/(?:v\/|video\/video\/embed\/videohash\/)([\w]+)/)?.[1];
+const embed = yt ? `https://www.youtube-nocookie.com/embed/${yt}` : vm ? `https://player.vimeo.com/video/${vm}` : ap ? `https://www.aparat.com/video/video/embed/videohash/${ap}/vt/frame` : null;
 const d = p.data.date.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 const mins = Math.max(1, Math.round(p.body.split(/\s+/).length / 200));
 const url = new URL(`/projects/${p.slug}`, Astro.site).href;
@@ -23,7 +24,7 @@ const jsonld = { '@context':'https://schema.org','@type':'Article',headline:p.da
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/projects">Projects</a> / <a href={`/projects?cat=${encodeURIComponent(p.data.category)}`}>{p.data.category}</a></nav>
 <h1>{p.data.title}</h1><p class="muted" style="font-size:1.15rem">{p.data.excerpt}</p>
 <div class="meta"><span>By Payannameh Plus</span><span>{d}</span><span>{mins} min read</span></div>
-{p.data.videoFile ? <video class="video" controls preload="metadata" playsinline poster={p.data.cover}><source src={p.data.videoFile} type="video/mp4"></video> : embed ? <iframe class="video" src={embed} title={`Video: ${p.data.title}`} loading="lazy" allowfullscreen></iframe> : p.data.cover && <img class="cover" style="border-radius:var(--r)" src={p.data.cover} alt={p.data.coverAlt}>}
+{embed ? <iframe class="video" src={embed} title={`Video: ${p.data.title}`} loading="lazy" allowfullscreen></iframe> : p.data.cover && <img class="cover" style="border-radius:var(--r)" src={p.data.cover} alt={p.data.coverAlt}>}
 </div></section>
 <section style="padding-top:var(--s3)"><div class="wrap layout">
 <div><div class="prose"><Content /></div>

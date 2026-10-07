@@ -10,7 +10,6 @@ const projects = defineCollection({
     cover: z.string().optional(),
     coverAlt: z.string().default(''),
     video: z.string().optional(),
-    videoFile: z.string().optional(),
     featured: z.boolean().default(false),
   }),
 });
