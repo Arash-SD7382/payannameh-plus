@@ -7,6 +7,7 @@ excerpt: How an architecture thesis on sustainable housing was researched,
 cover: /images/uploads/architecture-cover.jpg
 coverAlt: "   Aerial view of a modern city skyline with glass towers and a
   pedestrian bridge over a river"
+video: https://www.youtube.com/watch?v=rFHVbYeWqds
 featured: true
 ---
 This sample project shows how an architecture thesis is developed step by step. It is demo content used to preview the layout.
