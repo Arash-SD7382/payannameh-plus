@@ -19,6 +19,6 @@ collections:
       - { label: Cover image, name: cover, widget: image, required: false }
       - { label: Cover image description, name: coverAlt, widget: string, required: false }
       - { label: Video link (YouTube or Vimeo), name: video, widget: string, required: false }
-      - { label: Uploaded video (MP4, under 25 MB), name: videoFile, widget: file, required: false, media_folder: /public/videos, public_folder: /videos, hint: "Optional. For bigger videos use the link above." }
+      - { label: "Uploaded video (MP4 under 25 MB)" , name: videoFile, widget: file, required: false, media_folder: /public/videos, public_folder: /videos, hint: "Optional. For bigger videos use the link above." }
       - { label: Featured on home page, name: featured, widget: boolean, default: false }
       - { label: Project story and steps, name: body, widget: markdown }
