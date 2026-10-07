@@ -1,11 +1,11 @@
 ---
 import '../styles/global.css';
-import { contact } from '../data/services';
+import { team } from '../data/services';
 const { title, description = 'Payannameh Plus: thesis, article, research, data and programming support, with documented project case studies.', jsonld, image = '/images/logo.png' } = Astro.props;
 const full = title === 'Payannameh Plus' ? title : `${title} | Payannameh Plus`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const path = Astro.url.pathname;
-const links = [['Projects','/projects'],['Services','/services'],['About','/about']];
+const links = [['Projects','/projects'],['Services','/services'],['About','/about'],['Contact','/contact']];
 ---
 <!doctype html>
 <html lang="en">
@@ -32,7 +32,7 @@ const links = [['Projects','/projects'],['Services','/services'],['About','/abou
 <footer class="site"><div class="wrap">
 <div><h2>Payannameh Plus</h2><p>Advancing Academic Excellence</p></div>
 <div><h2>Explore</h2><ul>{links.map(([n,h]) => <li><a href={h}>{n}</a></li>)}</ul></div>
-<div><h2>Contact</h2><ul><li>Phone: <a href={`tel:${contact.phone}`}>{contact.phone}</a></li></ul></div>
+<div><h2>Contact</h2><ul>{team.map(p => <li><strong>{p.name}</strong><br>Phone: <a href={`tel:${p.phone}`}>{p.phone}</a><br>Telegram: <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener">@{p.telegram}</a></li>)}</ul></div>
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} Payannameh Plus. All rights reserved.</small></div></footer>
 <script is:inline>
 var m=document.getElementById('menu-btn'),n=document.getElementById('nav');

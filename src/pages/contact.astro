@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import { team } from '../data/services';
+---
+<Base title="Contact" description="Contact the Payannameh Plus team by phone or Telegram.">
+<section><div class="wrap">
+<h1>Contact</h1><p class="muted" style="max-width:60ch">Reach out by phone or Telegram. We reply as soon as we can.</p>
+<div class="grid" style="margin-top:2rem">{team.map(p => <div class="svc"><h2 style="font-size:1.3rem">{p.name}</h2>
+<p style="margin:.5rem 0"><strong>Phone:</strong> <a href={`tel:${p.phone}`}>{p.phone}</a></p>
+<p style="margin:.5rem 0 1rem"><strong>Telegram:</strong> <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener">@{p.telegram}</a></p>
+<a class="btn" href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener">Message on Telegram</a></div>)}</div>
+</div></section></Base>
