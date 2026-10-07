@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: Arash-SD7382
+  repo: Arash-SD7382/payannameh-plus
   branch: main
 media_folder: public/images/uploads
 public_folder: /images/uploads
