@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
+import OrderSteps from '../../components/OrderSteps.astro';
 import { groups } from '../../data/services';
 import { ui, href, bothLangs } from '../../i18n/ui';
 import { projectsFor } from '../../i18n/content';
@@ -22,4 +23,5 @@ const latest = all.slice(0, 6);
 <section class={featured.length > 0 ? 'soft' : ''}><div class="wrap"><h2>{t.latest}</h2>
 {latest.length ? <div class="grid">{latest.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty">{t.noProjects}</div>}
 <p style="margin-top:1.5rem"><a href={href(lang, '/projects')}>{t.browseAll}</a></p></div></section>
+<OrderSteps lang={lang} soft={featured.length === 0} />
 </Base>

@@ -9,7 +9,7 @@ export const fmtDate = (d: Date, lang: Lang, long = false) =>
 export const readMins = (body: string) => Math.max(1, Math.round(body.split(/\s+/).length / 200));
 export const ui = {
   fa: {
-    dir: 'rtl', foreignBadge: 'English', playVideo: 'پخش ویدیو', videoFallback: 'اگر ویدیو پخش نشد، لینک اصلی آن را باز کنید', brand: 'پایان‌نامه پلاس', tagline: 'پیشرفت در مسیر برتری علمی', switch: 'English',
+    dir: 'rtl', stepsTitle: "مراحل ثبت سفارش", stepsSub: "از درخواست تا تحویل، در شش مرحله ساده", steps: [["ثبت درخواست", "درخواست خود را از طریق تلگرام، واتساپ، بله یا تلفن برای ما بفرستید."], ["بررسی پروژه", "تیم متخصص موضوع، رشته و نیازهای شما را بررسی می‌کند."], ["اعلام هزینه و زمان", "هزینه و زمان تحویل پیش از شروع کار به‌طور شفاف اعلام می‌شود."], ["شروع پروژه", "پس از توافق، کار را آغاز می‌کنیم و در طول مسیر با شما در ارتباط هستیم."], ["تحویل پروژه", "کار نهایی در زمان توافق‌شده تحویل داده می‌شود."], ["اصلاحات", "در صورت نیاز، اصلاحات اعلام‌شده را انجام می‌دهیم."]], foreignBadge: 'English', playVideo: 'پخش ویدیو', videoFallback: 'اگر ویدیو پخش نشد، لینک اصلی آن را باز کنید', brand: 'پایان‌نامه پلاس', tagline: 'پیشرفت در مسیر برتری علمی', switch: 'English',
     metaDesc: 'پایان‌نامه پلاس: پشتیبانی در نگارش پایان‌نامه، مقاله، پژوهش، داده و برنامه‌نویسی، همراه با مستندسازی مرحله‌به‌مرحله پروژه‌ها.',
     nav: { projects: 'پروژه‌ها', services: 'خدمات', about: 'درباره ما', contact: 'تماس' },
     heroTitle: 'کارهای علمی و فنی، مرحله‌به‌مرحله مستندسازی‌شده.',
@@ -30,7 +30,7 @@ export const ui = {
     cat: { Writing: 'نگارش', Research: 'پژوهش', 'Editing & Quality': 'ویرایش و کنترل کیفیت', 'Data & Technical': 'داده و فنی' },
   },
   en: {
-    dir: 'ltr', foreignBadge: 'فارسی', playVideo: 'Play video', videoFallback: 'If the video does not play, open the original link', brand: 'Payannameh Plus', tagline: 'Advancing Academic Excellence', switch: 'فارسی',
+    dir: 'ltr', stepsTitle: "How to order", stepsSub: "From request to delivery in six simple steps", steps: [["Submit your request", "Send us your request by Telegram, WhatsApp, Bale or phone."], ["Project review", "Our specialist team reviews your topic, field and requirements."], ["Cost and timeline", "The cost and delivery time are shared clearly before work begins."], ["Project starts", "Once we agree, we begin and stay in touch with you along the way."], ["Delivery", "The final work is delivered on the agreed date."], ["Revisions", "If needed, we make the revisions you request."]], foreignBadge: 'فارسی', playVideo: 'Play video', videoFallback: 'If the video does not play, open the original link', brand: 'Payannameh Plus', tagline: 'Advancing Academic Excellence', switch: 'فارسی',
     metaDesc: 'Payannameh Plus: thesis, article, research, data and programming support, with step-by-step documented projects.',
     nav: { projects: 'Projects', services: 'Services', about: 'About', contact: 'Contact' },
     heroTitle: 'Academic and technical work, documented step by step.',
@@ -51,3 +51,5 @@ export const ui = {
     cat: { Writing: 'Writing', Research: 'Research', 'Editing & Quality': 'Editing & Quality', 'Data & Technical': 'Data & Technical' },
   },
 };
+
+export const num = (n: number, lang: Lang) => n.toLocaleString(lang === 'fa' ? 'fa-IR' : 'en-US');

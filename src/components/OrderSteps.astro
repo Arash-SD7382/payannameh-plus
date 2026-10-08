@@ -1,0 +1,8 @@
+---
+import { ui, num } from '../i18n/ui';
+const { lang, soft = false } = Astro.props; const t = ui[lang];
+---
+<section class={soft ? 'soft' : ''}><div class="wrap">
+<h2>{t.stepsTitle}</h2><p class="muted" style="margin-top:-.5rem">{t.stepsSub}</p>
+<ol class="steps">{t.steps.map(([h, d], i) => <li class="step"><span class="stepn" aria-hidden="true">{num(i + 1, lang)}</span><h3>{h}</h3><p class="muted sm">{d}</p></li>)}</ol>
+</div></section>
