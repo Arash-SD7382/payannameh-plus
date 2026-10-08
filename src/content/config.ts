@@ -11,6 +11,7 @@ const projects = defineCollection({
     coverAlt: z.string().default(''),
     video: z.string().optional(),
     featured: z.boolean().default(false),
+    address: z.string().optional(),
   }),
 });
 export const collections = { projects };

@@ -1,0 +1,48 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ProjectCard from '../../../components/ProjectCard.astro';
+import { ui, href, fmtDate, readMins } from '../../../i18n/ui';
+import { projectsOwn } from '../../../i18n/content';
+export async function getStaticPaths() {
+  const out = [];
+  const lists = { fa: await projectsOwn('fa'), en: await projectsOwn('en') };
+  for (const lang of ['fa', 'en']) {
+    const all = lists[lang]; const otherKeys = lists[lang === 'fa' ? 'en' : 'fa'].map(x => x.key);
+    all.forEach((p, i) => out.push({
+      params: { lang: lang === 'en' ? 'en' : undefined, slug: p.key },
+      props: { lang, p, newer: all[i - 1], older: all[i + 1], hasOther: otherKeys.includes(p.key),
+        related: all.filter(x => x.key !== p.key && x.data.category === p.data.category).slice(0, 3) },
+    }));
+  }
+  return out;
+}
+const { lang, p, newer, older, related, hasOther } = Astro.props;
+const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+const { Content, headings } = await p.render();
+const toc = headings.filter(h => h.depth === 2);
+const v = p.data.video || '';
+const yt = v.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([\w-]{11})/)?.[1];
+const vm = v.match(/vimeo\.com\/(\d+)/)?.[1];
+const ap = v.match(/aparat\.com\/(?:v\/|video\/video\/embed\/videohash\/)([\w]+)/)?.[1];
+const embed = yt ? `https://www.youtube-nocookie.com/embed/${yt}` : vm ? `https://player.vimeo.com/video/${vm}` : ap ? `https://www.aparat.com/video/video/embed/videohash/${ap}/vt/frame` : null;
+const url = new URL(href(lang, `/projects/${p.key}`), Astro.site).href;
+const jsonld = { '@context': 'https://schema.org', '@type': 'Article', headline: p.data.title, description: p.data.excerpt, inLanguage: lang, datePublished: p.data.date.toISOString(), author: { '@type': 'Organization', name: t.brand }, publisher: { '@type': 'Organization', name: t.brand }, mainEntityOfPage: url, ...(p.data.cover ? { image: p.data.cover } : {}) };
+const alt = hasOther ? href(other, `/projects/${p.key}`) : href(other, '/projects');
+---
+<Base lang={lang} title={p.data.title} description={p.data.excerpt} jsonld={jsonld} image={p.data.cover || '/images/logo.png'} alt={hasOther ? alt : undefined}>
+<article><section style="padding-bottom:var(--s3)"><div class="wrap article-head">
+<nav class="crumbs" aria-label="Breadcrumb"><a href={href(lang, '/')}>{t.home}</a> / <a href={href(lang, '/projects')}>{t.nav.projects}</a> / <a href={href(lang, `/projects?cat=${encodeURIComponent(p.data.category)}`)}>{t.cat[p.data.category]}</a></nav>
+<h1>{p.data.title}</h1><p class="muted" style="font-size:1.15rem">{p.data.excerpt}</p>
+<div class="meta"><span>{t.by}: {t.brand}</span><span>{fmtDate(p.data.date, lang, true)}</span><span>{readMins(p.body)} {t.minRead}</span></div>
+{embed ? <><div class="vframe" data-src={embed + (yt || vm ? '?autoplay=1' : '')} data-title={p.data.title}>{p.data.cover && <img src={p.data.cover} alt="" loading="lazy">}<button class="vplay" type="button" aria-label={t.playVideo}>▶</button></div><p class="muted sm" style="margin:.5rem 0 0"><a href={v} target="_blank" rel="noopener">{t.videoFallback}</a></p></> : p.data.cover && <img class="cover" style="border-radius:var(--r)" src={p.data.cover} alt={p.data.coverAlt}>}
+</div></section>
+<section style="padding-top:var(--s3)"><div class="wrap layout">
+<div><div class="prose"><Content /></div>
+<div class="pn">{older ? <a href={href(lang, `/projects/${older.key}`)}>{t.prev}<br><strong>{older.data.title}</strong></a> : <span></span>}{newer ? <a href={href(lang, `/projects/${newer.key}`)} style="text-align:end">{t.next}<br><strong>{newer.data.title}</strong></a> : <span></span>}</div></div>
+{toc.length > 1 && <aside class="toc" aria-label={t.onThisPage}><strong>{t.onThisPage}</strong><ol>{toc.map(h => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol></aside>}
+</div></section></article>
+{related.length > 0 && <section class="soft"><div class="wrap"><h2>{t.related}</h2><div class="grid">{related.map(r => <ProjectCard p={r} lang={lang} />)}</div></div></section>}
+</Base>
+<script is:inline>
+document.querySelectorAll('.vframe').forEach(function(f){f.querySelector('.vplay').addEventListener('click',function(){var i=document.createElement('iframe');i.src=f.dataset.src;i.title=f.dataset.title;i.allow='autoplay; fullscreen; picture-in-picture';i.allowFullscreen=true;i.className='video';f.replaceWith(i)})})
+</script>

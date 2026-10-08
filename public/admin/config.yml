@@ -5,19 +5,37 @@ backend:
 media_folder: public/images/uploads
 public_folder: /images/uploads
 collections:
-  - name: projects
-    label: Projects
+  - name: projects_fa
+    label: "پروژه‌ها (فارسی)"
+    folder: src/content/projects/fa
+    create: true
+    extension: md
+    slug: "{{fields.address}}"
+    fields:
+      - { label: "آدرس صفحه", name: address, widget: string, pattern: ["^[a-z0-9-]+$", "a-z, 0-9 and - only"], hint: "فقط حروف کوچک انگلیسی، عدد و خط تیره. این آدرس باید در نسخه فارسی و انگلیسی همان پروژه یکسان باشد." }
+      - { label: "عنوان", name: title, widget: string }
+      - { label: "تاریخ", name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "دسته‌بندی", name: category, widget: select, options: [{ label: "نگارش", value: "Writing" }, { label: "پژوهش", value: "Research" }, { label: "ویرایش و کنترل کیفیت", value: "Editing & Quality" }, { label: "داده و فنی", value: "Data & Technical" }] }
+      - { label: "خلاصه کوتاه", name: excerpt, widget: text }
+      - { label: "تصویر شاخص (اختیاری)", name: cover, widget: image, required: false }
+      - { label: "توضیح تصویر شاخص (اختیاری)", name: coverAlt, widget: string, required: false }
+      - { label: "لینک ویدیو (یوتیوب، ویمو یا آپارات)", name: video, widget: string, required: false, hint: "لینک صفحه ویدیو را بگذارید، مثلاً https://www.aparat.com/v/xxxxx" }
+      - { label: "نمایش در صفحه اصلی", name: featured, widget: boolean, default: false }
+      - { label: "داستان و مراحل پروژه", name: body, widget: markdown }
+  - name: projects_en
+    label: "Projects (English)"
     folder: src/content/projects
     create: true
     extension: md
-    slug: "{{slug}}"
+    slug: "{{fields.address}}"
     fields:
-      - { label: Title, name: title, widget: string }
-      - { label: Date, name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
-      - { label: Category, name: category, widget: select, options: ["Writing", "Research", "Editing & Quality", "Data & Technical"] }
-      - { label: Short summary, name: excerpt, widget: text }
-      - { label: Cover image, name: cover, widget: image, required: false }
-      - { label: Cover image description, name: coverAlt, widget: string, required: false }
+      - { label: "Web address", name: address, widget: string, pattern: ["^[a-z0-9-]+$", "a-z, 0-9 and - only"], hint: "English lowercase letters, numbers and hyphens. Use the SAME address in the Persian and English versions of a project." }
+      - { label: "Title", name: title, widget: string }
+      - { label: "Date", name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "YYYY-MM-DD", time_format: false }
+      - { label: "Category", name: category, widget: select, options: ["Writing", "Research", "Editing & Quality", "Data & Technical"] }
+      - { label: "Short summary", name: excerpt, widget: text }
+      - { label: "Cover image (optional)", name: cover, widget: image, required: false }
+      - { label: "Cover image description (optional)", name: coverAlt, widget: string, required: false }
       - { label: "Video link (YouTube, Vimeo or Aparat)", name: video, widget: string, required: false, hint: "Paste the video page link, for example https://www.aparat.com/v/xxxxx" }
-      - { label: Featured on home page, name: featured, widget: boolean, default: false }
-      - { label: Project story and steps, name: body, widget: markdown }
+      - { label: "Featured on home page", name: featured, widget: boolean, default: false }
+      - { label: "Project story and steps", name: body, widget: markdown }

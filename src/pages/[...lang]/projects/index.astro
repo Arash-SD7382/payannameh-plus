@@ -1,0 +1,29 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ProjectCard from '../../../components/ProjectCard.astro';
+import { categories } from '../../../content/config';
+import { ui, href, bothLangs } from '../../../i18n/ui';
+import { projectsFor } from '../../../i18n/content';
+export function getStaticPaths() { return bothLangs(); }
+const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+const all = await projectsFor(lang);
+---
+<Base lang={lang} title={t.nav.projects} description={t.projectsDesc} alt={href(other, '/projects')}>
+<section><div class="wrap"><h1>{t.nav.projects}</h1>
+<div class="toolbar">
+<input id="q" type="search" placeholder={t.searchPh} aria-label={t.searchLabel}>
+<select id="cat" aria-label={t.catLabel}><option value="">{t.allCats}</option>{categories.map(c => <option value={c}>{t.cat[c]}</option>)}</select>
+<select id="sort" aria-label={t.sortLabel}><option value="new">{t.newest}</option><option value="old">{t.oldest}</option></select>
+</div>
+<div class="grid" id="list">{all.map(p => <ProjectCard p={p} lang={lang} />)}</div>
+<div class="empty" id="none" hidden>{t.noMatch}</div></div></section>
+<script is:inline>
+var q=document.getElementById('q'),c=document.getElementById('cat'),s=document.getElementById('sort'),l=document.getElementById('list'),n=document.getElementById('none');
+var cards=[].slice.call(l.children),u=new URLSearchParams(location.search);if(u.get('cat'))c.value=u.get('cat');
+function run(){var t=q.value.trim().toLowerCase(),shown=0;
+cards.sort(function(a,b){return s.value==='new'?b.dataset.date-a.dataset.date:a.dataset.date-b.dataset.date}).forEach(function(e){l.appendChild(e);
+var ok=(!c.value||e.dataset.cat===c.value)&&(!t||(e.dataset.title+' '+e.dataset.cat.toLowerCase()+' '+e.dataset.text).indexOf(t)>-1);e.hidden=!ok;if(ok)shown++});
+n.hidden=shown>0}
+[q,c,s].forEach(function(e){e.addEventListener('input',run)});run();
+</script>
+</Base>

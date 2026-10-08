@@ -1,0 +1,9 @@
+---
+import Base from '../../layouts/Base.astro';
+import { ui, href, bothLangs } from '../../i18n/ui';
+export function getStaticPaths() { return bothLangs(); }
+const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+---
+<Base lang={lang} title={t.nav.about} description={t.aboutDesc} alt={href(other, '/about')}>
+<section><div class="wrap" style="max-width:760px"><h1>{t.aboutTitle}</h1>
+<p class="prose" style="font-size:1.15rem">{t.about1}</p><p class="prose" style="font-size:1.15rem">{t.about2}</p></div></section></Base>

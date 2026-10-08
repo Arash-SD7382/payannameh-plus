@@ -1,7 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
+import { ui } from '../i18n/ui';
+const t = ui.fa; const e = ui.en;
 ---
-<Base title="Page not found"><section><div class="wrap" style="text-align:center">
-<h1>404</h1><p class="muted">This page could not be found. It may have moved or the link may be wrong.</p>
-<div class="actions" style="justify-content:center"><a class="btn" href="/">Back to home</a><a class="btn ghost" href="/projects">View projects</a></div>
+<Base lang="fa" title="404" alt="/en/"><section><div class="wrap" style="text-align:center">
+<h1>404</h1><p class="muted">{t.notFound} {t.notFoundText}</p><p class="muted" dir="ltr" lang="en">{e.notFoundText}</p>
+<div class="actions" style="justify-content:center"><a class="btn" href="/">{t.backHome}</a><a class="btn ghost" href="/en/" lang="en">{e.backHome}</a></div>
 </div></section></Base>

@@ -1,0 +1,25 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { groups } from '../../data/services';
+import { ui, href, bothLangs } from '../../i18n/ui';
+import { projectsFor } from '../../i18n/content';
+export function getStaticPaths() { return bothLangs(); }
+const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+const all = await projectsFor(lang);
+const featured = all.filter(p => p.data.featured).slice(0, 3);
+const latest = all.slice(0, 6);
+---
+<Base lang={lang} title={t.brand} alt={href(other, '/')}>
+<section class="hero"><div class="wrap">
+<div class="rule"></div><h1>{t.heroTitle}</h1><p>{t.heroText}</p>
+<div class="actions"><a class="btn" href={href(lang, '/projects')}>{t.viewProjects}</a><a class="btn ghost" href={href(lang, '/services')}>{t.ourServices}</a></div>
+</div></section>
+<section class="soft"><div class="wrap"><h2>{t.whatWeHelp}</h2>
+<div class="grid">{groups.map(g => <div class="svc"><h3>{g[lang]}</h3><ul>{g.items.slice(0, 4).map(i => <li>{i[lang]}</li>)}</ul></div>)}</div>
+<p style="margin-top:1.5rem"><a href={href(lang, '/services')}>{t.seeAll}</a></p></div></section>
+{featured.length > 0 && <section><div class="wrap"><h2>{t.featured}</h2><div class="grid">{featured.map(p => <ProjectCard p={p} lang={lang} />)}</div></div></section>}
+<section class={featured.length > 0 ? 'soft' : ''}><div class="wrap"><h2>{t.latest}</h2>
+{latest.length ? <div class="grid">{latest.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty">{t.noProjects}</div>}
+<p style="margin-top:1.5rem"><a href={href(lang, '/projects')}>{t.browseAll}</a></p></div></section>
+</Base>

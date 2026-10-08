@@ -1,39 +1,47 @@
 ---
 import '../styles/global.css';
 import { team } from '../data/services';
-const { title, description = 'Payannameh Plus: thesis, article, research, data and programming support, with documented project case studies.', jsonld, image = '/images/logo.png' } = Astro.props;
-const full = title === 'Payannameh Plus' ? title : `${title} | Payannameh Plus`;
+import { ui, href } from '../i18n/ui';
+const { lang = 'fa', title, description, jsonld, image = '/images/logo.png', alt } = Astro.props;
+const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+const full = title === t.brand ? title : `${title} | ${t.brand}`;
+const desc = description || t.metaDesc;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const path = Astro.url.pathname;
-const links = [['Projects','/projects'],['Services','/services'],['About','/about'],['Contact','/contact']];
+const path = Astro.url.pathname.replace(/^\/en/, '') || '/';
+const links = [[t.nav.projects, '/projects'], [t.nav.services, '/services'], [t.nav.about, '/about'], [t.nav.contact, '/contact']];
+const switchTo = alt || href(other, '/');
 ---
 <!doctype html>
-<html lang="en">
+<html lang={lang} dir={t.dir}>
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{full}</title><meta name="description" content={description}>
+<title>{full}</title><meta name="description" content={desc}>
 <link rel="canonical" href={canonical}><link rel="icon" href="/images/mark.png">
-<meta property="og:title" content={full}><meta property="og:description" content={description}>
+{alt && <link rel="alternate" hreflang={lang} href={canonical}>}
+{alt && <link rel="alternate" hreflang={other} href={new URL(alt, Astro.site)}>}
+<meta property="og:title" content={full}><meta property="og:description" content={desc}>
 <meta property="og:type" content={jsonld ? 'article' : 'website'}><meta property="og:url" content={canonical}>
+<meta property="og:locale" content={lang === 'fa' ? 'fa_IR' : 'en_US'}>
 <meta property="og:image" content={new URL(image, Astro.site)}><meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600&family=Vazirmatn:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script is:inline>try{var t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
 </head>
 <body>
 <header class="site"><div class="wrap">
-<a class="brand" href="/"><img src="/images/logo.png" alt="Payannameh Plus logo" width="52" height="52"></a>
-<nav class="main" id="nav" aria-label="Main">{links.map(([n,h]) => <a href={h} aria-current={path.startsWith(h) ? 'page' : undefined}>{n}</a>)}</nav>
+<a class="brand" href={href(lang, '/')}><img src="/images/logo.png" alt={t.brand} width="52" height="52"></a>
+<nav class="main" id="nav" aria-label="Main">{links.map(([n, p]) => <a href={href(lang, p)} aria-current={path.startsWith(p) ? 'page' : undefined}>{n}</a>)}</nav>
+<a class="lang" href={switchTo} hreflang={other} lang={other}>{t.switch}</a>
 <button class="icon-btn" id="theme" aria-label="Toggle dark mode">◐</button>
-<button class="icon-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav">☰</button>
+<button class="icon-btn" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
 </div></header>
 <main><slot /></main>
 <footer class="site"><div class="wrap">
-<div><h2>Payannameh Plus</h2><p>Advancing Academic Excellence</p></div>
-<div><h2>Explore</h2><ul>{links.map(([n,h]) => <li><a href={h}>{n}</a></li>)}</ul></div>
-<div><h2>Contact</h2><ul>{team.map(p => <li><strong>{p.name}</strong><br>Phone: <a href={`tel:${p.phone}`}>{p.phone}</a><br>Telegram: <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener">@{p.telegram}</a></li>)}</ul></div>
-</div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} Payannameh Plus. All rights reserved.</small></div></footer>
+<div><h2>{t.brand}</h2><p>{t.tagline}</p></div>
+<div><h2>{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)}>{n}</a></li>)}</ul></div>
+<div><h2>{t.contact}</h2><ul>{team.map(p => <li><strong>{p[lang]}</strong><br>{t.phone}: <a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a><br>{t.telegram}: <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener"><bdi dir="ltr">@{p.telegram}</bdi></a></li>)}</ul></div>
+</div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. {t.rights}</small></div></footer>
 <script is:inline>
 var m=document.getElementById('menu-btn'),n=document.getElementById('nav');
 m.addEventListener('click',function(){var o=n.classList.toggle('open');m.setAttribute('aria-expanded',o)});

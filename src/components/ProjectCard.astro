@@ -1,11 +1,10 @@
 ---
-const { p } = Astro.props;
-const d = p.data.date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-const mins = Math.max(1, Math.round(p.body.split(/\s+/).length / 200));
+import { ui, href, fmtDate, readMins } from '../i18n/ui';
+const { p, lang } = Astro.props; const t = ui[lang]; const L = p.itemLang || lang; const ti = ui[L];
 ---
-<a class="card" href={`/projects/${p.slug}`} data-title={p.data.title.toLowerCase()} data-cat={p.data.category} data-text={(p.data.excerpt).toLowerCase()} data-date={p.data.date.getTime()}>
+<a class="card" lang={L} dir={ti.dir} href={href(L, `/projects/${p.key}`)} data-title={p.data.title.toLowerCase()} data-cat={p.data.category} data-text={(p.data.excerpt + " " + ti.cat[p.data.category]).toLowerCase()} data-date={p.data.date.getTime()}>
   {p.data.cover ? <img class="cover" src={p.data.cover} alt={p.data.coverAlt} loading="lazy" width="640" height="360"> : <div class="cover" role="presentation"></div>}
-  <div class="body"><span class="badge" style="align-self:flex-start">{p.data.category}</span>
+  <div class="body"><div style="display:flex;gap:.4rem;flex-wrap:wrap"><span class="badge">{ti.cat[p.data.category]}</span>{p.foreign && <span class="badge gold">{t.foreignBadge}</span>}</div>
   <h3>{p.data.title}</h3><p class="muted sm" style="margin:0">{p.data.excerpt}</p>
-  <p class="muted sm" style="margin:0">{d} · {mins} min read</p></div>
+  <p class="muted sm" style="margin:0">{fmtDate(p.data.date, L)} · {readMins(p.body)} {ti.minRead}</p></div>
 </a>
