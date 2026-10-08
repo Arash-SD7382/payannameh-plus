@@ -1,5 +1,5 @@
 :root{--navy:#00204a;--blue:#005792;--sky:#00bbf0;--gold:#fdb44b;
---bg:#fff;--soft:#f3f6fa;--text:#14233a;--muted:#55667d;--line:#dbe3ee;--link:#005792;--btn:#005792;--btn-text:#fff;--head:#00204a;
+--bg:#fbf8f2;--soft:#f2ede2;--text:#1a2433;--muted:#5b6678;--line:#e3dccd;--link:#005792;--btn:#005792;--btn-text:#fff;--head:#00204a;
 --ui:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;--read:'Source Serif 4',Georgia,serif;--fa:'Vazirmatn',Tahoma,sans-serif;
 --s1:.5rem;--s2:1rem;--s3:1.5rem;--s4:2.5rem;--s5:4rem;--r:10px}
 :root[data-theme=dark]{--bg:#0a1626;--soft:#10223a;--text:#e6edf7;--muted:#9db0c8;--line:#233b59;--link:#5cc8f5;--btn:#00bbf0;--btn-text:#00204a;--head:#f2f6fc}
