@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { team } from '../data/services';
+import ContactLinks from '../components/ContactLinks.astro';
 import { ui, href } from '../i18n/ui';
 const { lang = 'fa', title, description, jsonld, image = '/images/logo.png', alt } = Astro.props;
 const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
@@ -40,8 +41,9 @@ const switchTo = alt || href(other, '/');
 <footer class="site"><div class="wrap">
 <div><h2>{t.brand}</h2><p>{t.tagline}</p></div>
 <div><h2>{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)}>{n}</a></li>)}</ul></div>
-<div><h2>{t.contact}</h2><ul>{team.map(p => <li><strong>{p[lang]}</strong><br>{t.phone}: <a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a><br>{t.telegram}: <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener"><bdi dir="ltr">@{p.telegram}</bdi></a></li>)}</ul></div>
+<div><h2>{t.contact}</h2><ul>{team.map(p => <li><strong>{p[lang]}</strong><br><a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" /></li>)}</ul></div>
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. {t.rights}</small></div></footer>
+<div class="cbar"><a class="cbar-t" href={href(lang, '/contact')}>{t.contactUs}</a><ContactLinks person={team[0]} who={team[0][lang]} size="bar" /></div>
 <script is:inline>
 var m=document.getElementById('menu-btn'),n=document.getElementById('nav');
 m.addEventListener('click',function(){var o=n.classList.toggle('open');m.setAttribute('aria-expanded',o)});

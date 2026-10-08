@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import ContactLinks from '../../components/ContactLinks.astro';
 import { team } from '../../data/services';
 import { ui, href, bothLangs } from '../../i18n/ui';
 export function getStaticPaths() { return bothLangs(); }
@@ -9,6 +10,6 @@ const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 
 <section><div class="wrap"><h1>{t.contactUs}</h1><p class="muted" style="max-width:60ch">{t.contactIntro}</p>
 <div class="grid" style="margin-top:2rem">{team.map(p => <div class="svc"><h2 style="font-size:1.3rem">{p[lang]}</h2>
 <p style="margin:.5rem 0"><strong>{t.phone}:</strong> <a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a></p>
-<p style="margin:.5rem 0 1rem"><strong>{t.telegram}:</strong> <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener"><bdi dir="ltr">@{p.telegram}</bdi></a></p>
-<a class="btn" href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener">{t.msgTelegram}</a></div>)}</div>
+{p.telegram && <p style="margin:.5rem 0 1rem"><strong>{t.telegram}:</strong> <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener"><bdi dir="ltr">@{p.telegram}</bdi></a></p>}
+<ContactLinks person={p} who={p[lang]} /></div>)}</div>
 </div></section></Base>

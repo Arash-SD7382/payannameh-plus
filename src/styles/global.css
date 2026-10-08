@@ -70,3 +70,9 @@ html[lang=fa] .prose{line-height:2.05}
 .vframe img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.85}
 .vplay{position:absolute;inset:0;margin:auto;width:76px;height:76px;border-radius:50%;border:0;background:var(--gold);color:var(--navy);font-size:1.8rem;cursor:pointer;padding-inline-start:.2rem}
 .vplay:hover{filter:brightness(1.08)}
+
+.cl{display:inline-flex;gap:.5rem;flex-wrap:wrap}
+.ci{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;transition:transform .15s}
+.ci:hover{transform:translateY(-2px)}.ci svg{width:62%;height:62%}.ci.sm{width:36px;height:36px;margin-top:.35rem}.ci.bar{width:38px;height:38px}
+.cbar{display:none}
+@media(max-width:760px){.cbar{display:flex;position:fixed;inset-inline:0;bottom:0;z-index:30;align-items:center;justify-content:space-between;gap:.5rem;padding:.4rem .75rem calc(.4rem + env(safe-area-inset-bottom,0px));background:var(--navy);border-top:3px solid var(--gold)}.cbar-t{color:#fff;font-weight:600;text-decoration:none}body{padding-bottom:64px}}

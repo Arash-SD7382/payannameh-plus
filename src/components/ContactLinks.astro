@@ -1,0 +1,11 @@
+---
+import { ICONS, COLORS } from '../data/icons';
+const { person, who = '', size = '' } = Astro.props;
+const items = [
+  { k: 'phone', href: `tel:${person.phone}`, label: 'Phone' },
+  person.telegram && { k: 'telegram', href: `https://t.me/${person.telegram}`, label: 'Telegram' },
+  person.whatsapp && { k: 'whatsapp', href: `https://wa.me/${person.whatsapp}`, label: 'WhatsApp' },
+  person.bale && { k: 'bale', href: `https://ble.ir/${person.bale}`, label: 'Bale' },
+].filter(Boolean);
+---
+<span class="cl">{items.map(i => <a class={`ci ${size}`} style={`background:${COLORS[i.k]}`} href={i.href} aria-label={`${i.label}${who ? ' - ' + who : ''}`} {...(i.k === 'phone' ? {} : { target: '_blank', rel: 'noopener' })}><Fragment set:html={ICONS[i.k]} /></a>)}</span>

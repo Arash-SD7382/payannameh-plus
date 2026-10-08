@@ -10,7 +10,8 @@ export const groups = [
     { fa: 'تحلیل داده', en: 'Data Analytics' }, { fa: 'آموزش مدل', en: 'Model Training' }, { fa: 'پروژه‌های سال آخر (FYP)', en: 'Final Year Projects (FYPs)' },
     { fa: 'پروژه‌های برنامه‌نویسی', en: 'Programming Projects' }, { fa: 'توسعه فرانت‌اند', en: 'Front-End Development' } ] },
 ];
+// whatsapp: number only (wa.me links need a phone number); bale: Bale username, or +number if there is no username
 export const team = [
-  { fa: 'آرش صادقی', en: 'Arash Sadeghi', phone: '+989111347382', telegram: 'ArashSadeghiT' },
-  { fa: 'هادی صدفی', en: 'Hadi Sadafi', phone: '+989386386833', telegram: 'hadisf6' },
+  { fa: 'دکتر آرش صادقی', en: 'Dr. Arash Sadeghi', phone: '+989111347382', telegram: 'ArashSadeghiT', whatsapp: '989111347382', bale: 'AST7382' },
+  { fa: 'دکتر هادی صدفی', en: 'Dr. Hadi Sadafi', phone: '+989386386833', telegram: 'hadisf6', whatsapp: '989386386833', bale: '+989386386833' },
 ];
