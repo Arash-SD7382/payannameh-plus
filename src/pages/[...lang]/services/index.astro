@@ -1,0 +1,17 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ServiceCard from '../../../components/ServiceCard.astro';
+import { groups } from '../../../data/services';
+import { ui, href, bothLangs } from '../../../i18n/ui';
+import { servicesOwn } from '../../../i18n/content';
+export function getStaticPaths() { return bothLangs(); }
+const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+const list = await servicesOwn(lang);
+---
+<Base lang={lang} title={t.nav.services} description={t.servicesDesc} alt={href(other, '/services')}>
+<section><div class="wrap"><h1>{t.nav.services}</h1><p class="muted" style="max-width:60ch">{t.servicesIntro}</p>
+<div class="grid" style="margin-top:2rem">{list.map(s => <ServiceCard s={s} lang={lang} more={true} />)}</div></div></section>
+<section class="soft"><div class="wrap"><h2>{t.servicesAll}</h2>
+<div class="grid">{groups.map(g => <div class="svc"><h3>{g[lang]}</h3><ul>{g.items.map(i => <li>{i[lang]}</li>)}</ul></div>)}</div>
+<div class="actions"><a class="btn" href={href(lang, '/contact')}>{t.contactUs}</a></div></div></section>
+</Base>

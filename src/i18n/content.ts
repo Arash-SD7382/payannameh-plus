@@ -16,3 +16,12 @@ export async function projectsFor(lang: Lang) {
   const extra = other.filter((p) => !have.has(p.key)).map((p) => ({ ...p, foreign: true }));
   return [...own, ...extra].sort((a, b) => +b.data.date - +a.data.date);
 }
+
+// Service pages: src/content/services/fa/ is Persian, src/content/services/ is English.
+export async function servicesOwn(lang: Lang) {
+  const all = await getCollection('services');
+  return all
+    .filter((e) => (e.slug.startsWith('fa/') ? 'fa' : 'en') === lang)
+    .map((e) => ({ ...e, key: e.slug.replace(/^fa\//, '') }))
+    .sort((a, b) => a.data.order - b.data.order);
+}

@@ -5,7 +5,7 @@ export const groups = [
     { fa: 'نگارش بلاگ', en: 'Blog Writing' }, { fa: 'کپی‌رایتینگ', en: 'Copywriting' }, { fa: 'ساخت پاورپوینت', en: 'PowerPoint Presentations' } ] },
   { key: 'Articles', fa: 'مقالات علمی', en: 'Academic Articles', items: [
     { fa: 'نگارش مقاله', en: 'Article Writing' }, { fa: 'مقاله علمی پژوهشی', en: 'Scientific-Research Journal Articles' },
-    { fa: 'مقاله ISI', en: 'ISI Articles' }, { fa: 'مقاله ISC', en: 'ISC Articles' },
+    { fa: 'مقاله ISI', en: 'ISI Articles' }, { fa: 'مقاله JCR', en: 'JCR Articles' }, { fa: 'مقاله ISC', en: 'ISC Articles' },
     { fa: 'مقاله کنفرانسی و همایشی', en: 'Conference & Symposium Papers' }, { fa: 'استخراج مقاله از پایان‌نامه', en: 'Article Extraction from a Thesis' } ] },
   { key: 'Research', fa: 'پژوهش', en: 'Research', items: [
     { fa: 'پروپوزال تحقیقاتی', en: 'Research Proposal' }, { fa: 'پروپوزال پروژه', en: 'Project Proposal' }, { fa: 'جمع‌آوری داده', en: 'Data Collection' } ] },

@@ -1,0 +1,8 @@
+---
+import { ui, href } from '../i18n/ui';
+const { s, lang, more = false } = Astro.props; const t = ui[lang];
+---
+<a class="card scard" href={href(lang, `/services/${s.key}`)}>
+  <img class="cover" src={s.data.image} alt={s.data.imageAlt || s.data.title} loading="lazy" width="640" height="360">
+  <div class="body"><h3>{s.data.title}</h3>{more && <p class="muted sm" style="margin:0">{s.data.excerpt}</p>}{more && <span class="btn sm" style="align-self:flex-start;margin-top:auto">{t.readMoreBtn}</span>}</div>
+</a>

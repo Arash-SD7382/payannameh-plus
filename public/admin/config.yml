@@ -39,3 +39,35 @@ collections:
       - { label: "Video link (YouTube, Vimeo or Aparat)", name: video, widget: string, required: false, hint: "Paste the video page link, for example https://www.aparat.com/v/xxxxx" }
       - { label: "Featured on home page", name: featured, widget: boolean, default: false }
       - { label: "Project story and steps", name: body, widget: markdown }
+  - name: services_fa
+    label: "خدمات (فارسی)"
+    folder: src/content/services/fa
+    create: true
+    extension: md
+    slug: "{{fields.address}}"
+    media_folder: /public/images/services
+    public_folder: /images/services
+    fields:
+      - { label: "آدرس صفحه", name: address, widget: string, pattern: ["^[a-z0-9-]+$", "a-z, 0-9 and - only"], hint: "فقط حروف کوچک انگلیسی، عدد و خط تیره. در نسخه فارسی و انگلیسی همان خدمت یکسان باشد." }
+      - { label: "عنوان خدمت", name: title, widget: string }
+      - { label: "ترتیب نمایش (عدد کمتر، بالاتر)", name: order, widget: number, value_type: int, min: 1, default: 100 }
+      - { label: "توضیح کوتاه برای کارت", name: excerpt, widget: text }
+      - { label: "تصویر (۱۲۰۰×۶۷۵، زیر ۲۰۰ کیلوبایت)", name: image, widget: image }
+      - { label: "توضیح تصویر", name: imageAlt, widget: string, required: false }
+      - { label: "توضیح کامل خدمت", name: body, widget: markdown }
+  - name: services_en
+    label: "Services (English)"
+    folder: src/content/services
+    create: true
+    extension: md
+    slug: "{{fields.address}}"
+    media_folder: /public/images/services
+    public_folder: /images/services
+    fields:
+      - { label: "Web address", name: address, widget: string, pattern: ["^[a-z0-9-]+$", "a-z, 0-9 and - only"], hint: "English lowercase letters, numbers and hyphens. Use the SAME address for the Persian and English versions of a service." }
+      - { label: "Service title", name: title, widget: string }
+      - { label: "Display order (lower comes first)", name: order, widget: number, value_type: int, min: 1, default: 100 }
+      - { label: "Short text for the card", name: excerpt, widget: text }
+      - { label: "Image (1200x675, under 200 KB)", name: image, widget: image }
+      - { label: "Image description", name: imageAlt, widget: string, required: false }
+      - { label: "Full description", name: body, widget: markdown }

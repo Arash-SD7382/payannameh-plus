@@ -1,0 +1,37 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ServiceCard from '../../../components/ServiceCard.astro';
+import ContactLinks from '../../../components/ContactLinks.astro';
+import { team } from '../../../data/services';
+import { ui, href } from '../../../i18n/ui';
+import { servicesOwn } from '../../../i18n/content';
+export async function getStaticPaths() {
+  const lists = { fa: await servicesOwn('fa'), en: await servicesOwn('en') };
+  const out = [];
+  for (const lang of ['fa', 'en']) {
+    const other = lists[lang === 'fa' ? 'en' : 'fa'].map(x => x.key);
+    lists[lang].forEach(s => out.push({
+      params: { lang: lang === 'en' ? 'en' : undefined, slug: s.key },
+      props: { lang, s, hasOther: other.includes(s.key), related: lists[lang].filter(x => x.key !== s.key).slice(0, 3) },
+    }));
+  }
+  return out;
+}
+const { lang, s, hasOther, related } = Astro.props;
+const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+const { Content } = await s.render();
+const url = new URL(href(lang, `/services/${s.key}`), Astro.site).href;
+const jsonld = { '@context': 'https://schema.org', '@type': 'Service', name: s.data.title, description: s.data.excerpt, inLanguage: lang, url, image: new URL(s.data.image, Astro.site).href, provider: { '@type': 'Organization', name: t.brand } };
+---
+<Base lang={lang} title={s.data.title} description={s.data.excerpt} jsonld={jsonld} image={s.data.image} alt={hasOther ? href(other, `/services/${s.key}`) : href(other, '/services')}>
+<article><section style="padding-bottom:var(--s3)"><div class="wrap article-head">
+<nav class="crumbs" aria-label="Breadcrumb"><a href={href(lang, '/')}>{t.home}</a> / <a href={href(lang, '/services')}>{t.nav.services}</a> / {s.data.title}</nav>
+<h1>{s.data.title}</h1><p class="muted" style="font-size:1.15rem">{s.data.excerpt}</p>
+<img class="cover" style="border-radius:var(--r);margin-top:1rem" src={s.data.image} alt={s.data.imageAlt || s.data.title} width="1200" height="675">
+</div></section>
+<section style="padding-top:var(--s3)"><div class="wrap article-head"><div class="prose"><Content /></div>
+<div class="cta"><h2>{t.ctaTitle}</h2><p>{t.ctaText}</p>
+<div class="people">{team.map(p => <div class="who"><span>{p[lang]}</span><ContactLinks person={p} who={p[lang]} /></div>)}</div></div>
+</div></section></article>
+{related.length > 0 && <section class="soft"><div class="wrap"><h2>{t.relatedServices}</h2><div class="grid g2">{related.map(r => <ServiceCard s={r} lang={lang} />)}</div></div></section>}
+</Base>
