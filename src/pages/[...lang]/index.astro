@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
+import FaqList from '../../components/FaqList.astro';
 import OrderSteps from '../../components/OrderSteps.astro';
 import { groups } from '../../data/services';
 import { ui, href, bothLangs } from '../../i18n/ui';
@@ -10,8 +11,9 @@ const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 
 const all = await projectsFor(lang);
 const featured = all.filter(p => p.data.featured).slice(0, 3);
 const latest = all.slice(0, 6);
+const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: t.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
 ---
-<Base lang={lang} title={t.brand} alt={href(other, '/')}>
+<Base lang={lang} title={t.brand} alt={href(other, '/')} jsonld={faqLd}>
 <section class="hero"><div class="wrap">
 <div class="rule"></div><h1>{t.heroTitle}</h1><p>{t.heroText}</p>
 <div class="actions"><a class="btn" href={href(lang, '/projects')}>{t.viewProjects}</a><a class="btn ghost" href={href(lang, '/services')}>{t.ourServices}</a></div>
@@ -24,4 +26,5 @@ const latest = all.slice(0, 6);
 {latest.length ? <div class="grid">{latest.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty">{t.noProjects}</div>}
 <p style="margin-top:1.5rem"><a href={href(lang, '/projects')}>{t.browseAll}</a></p></div></section>
 <OrderSteps lang={lang} soft={featured.length === 0} />
+<FaqList lang={lang} soft={featured.length > 0} />
 </Base>

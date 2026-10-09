@@ -1,0 +1,12 @@
+---
+import { ui } from '../i18n/ui';
+const { lang, soft = false } = Astro.props; const t = ui[lang];
+---
+<section class={soft ? 'soft' : ''}><div class="wrap" style="max-width:820px">
+<h2>{t.faqTitle}</h2><p class="muted" style="margin-top:-.5rem">{t.faqSub}</p>
+<div class="faq">{t.faq.map(([q, a]) => <details name="faq"><summary>{q}</summary><div class="faq-a"><p>{a}</p></div></details>)}</div>
+</div></section>
+<script is:inline>
+var fd=document.querySelectorAll('.faq details');
+fd.forEach(function(d){d.addEventListener('toggle',function(){if(d.open)fd.forEach(function(o){if(o!==d)o.open=false})})});
+</script>

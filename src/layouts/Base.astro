@@ -21,7 +21,7 @@ const switchTo = alt || href(other, '/');
 {alt && <link rel="alternate" hreflang={lang} href={canonical}>}
 {alt && <link rel="alternate" hreflang={other} href={new URL(alt, Astro.site)}>}
 <meta property="og:title" content={full}><meta property="og:description" content={desc}>
-<meta property="og:type" content={jsonld ? 'article' : 'website'}><meta property="og:url" content={canonical}>
+<meta property="og:type" content={jsonld && jsonld['@type'] === 'Article' ? 'article' : 'website'}><meta property="og:url" content={canonical}>
 <meta property="og:locale" content={lang === 'fa' ? 'fa_IR' : 'en_US'}>
 <meta property="og:image" content={new URL(image, Astro.site)}><meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
