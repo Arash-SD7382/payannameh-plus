@@ -1,5 +1,5 @@
 import { defineCollection, z } from 'astro:content';
-export const categories = ['Writing', 'Research', 'Editing & Quality', 'Data & Technical'] as const;
+export const categories = ['Writing', 'Articles', 'Research', 'Editing & Quality', 'Data & Technical'] as const;
 const projects = defineCollection({
   type: 'content',
   schema: z.object({

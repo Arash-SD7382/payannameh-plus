@@ -1,8 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
-import FaqList from '../../components/FaqList.astro';
 import OrderSteps from '../../components/OrderSteps.astro';
+import FaqList from '../../components/FaqList.astro';
 import { groups } from '../../data/services';
 import { ui, href, bothLangs } from '../../i18n/ui';
 import { projectsFor } from '../../i18n/content';
@@ -10,21 +10,23 @@ export function getStaticPaths() { return bothLangs(); }
 const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
 const all = await projectsFor(lang);
 const featured = all.filter(p => p.data.featured).slice(0, 3);
-const latest = all.slice(0, 6);
+const shown = featured.length ? featured : all.slice(0, 6);
 const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: t.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) };
 ---
 <Base lang={lang} title={t.brand} alt={href(other, '/')} jsonld={faqLd}>
 <section class="hero"><div class="wrap">
 <div class="rule"></div><h1>{t.heroTitle}</h1><p>{t.heroText}</p>
 <div class="actions"><a class="btn" href={href(lang, '/projects')}>{t.viewProjects}</a><a class="btn ghost" href={href(lang, '/services')}>{t.ourServices}</a></div>
+<div class="stats" style="margin-top:2.5rem">{t.stats.map(([v, l]) => <div class="stat"><strong dir="ltr">{v}</strong><span>{l}</span></div>)}</div>
 </div></section>
-<section class="soft"><div class="wrap"><h2>{t.whatWeHelp}</h2>
+<section class="soft"><div class="wrap" style="max-width:820px"><h2>{t.nav.about}</h2><p class="prose" style="font-size:1.1rem">{t.introText}</p>
+<p><a href={href(lang, '/about')}>{t.readMore}</a></p></div></section>
+<section><div class="wrap"><h2>{t.whatWeHelp}</h2>
 <div class="grid">{groups.map(g => <div class="svc"><h3>{g[lang]}</h3><ul>{g.items.slice(0, 4).map(i => <li>{i[lang]}</li>)}</ul></div>)}</div>
 <p style="margin-top:1.5rem"><a href={href(lang, '/services')}>{t.seeAll}</a></p></div></section>
-{featured.length > 0 && <section><div class="wrap"><h2>{t.featured}</h2><div class="grid">{featured.map(p => <ProjectCard p={p} lang={lang} />)}</div></div></section>}
-<section class={featured.length > 0 ? 'soft' : ''}><div class="wrap"><h2>{t.latest}</h2>
-{latest.length ? <div class="grid">{latest.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty">{t.noProjects}</div>}
+<OrderSteps lang={lang} soft={true} />
+<section><div class="wrap"><h2>{featured.length ? t.featured : t.latest}</h2>
+{shown.length ? <div class="grid">{shown.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty">{t.noProjects}</div>}
 <p style="margin-top:1.5rem"><a href={href(lang, '/projects')}>{t.browseAll}</a></p></div></section>
-<OrderSteps lang={lang} soft={featured.length === 0} />
-<FaqList lang={lang} soft={featured.length > 0} />
+<FaqList lang={lang} soft={true} />
 </Base>
