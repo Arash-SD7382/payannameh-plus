@@ -23,7 +23,7 @@ const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity
 <section class="soft"><div class="wrap" style="max-width:820px"><h2>{t.nav.about}</h2><p class="prose" style="font-size:1.1rem">{t.introText}</p>
 <p><a href={href(lang, '/about')}>{t.readMore}</a></p></div></section>
 <section><div class="wrap"><h2>{t.whatWeHelp}</h2>
-<div class="grid g2">{svc.map(x => <ServiceCard s={x} lang={lang} />)}</div>
+<div class="grid g2">{svc.map(x => <ServiceCard s={x} lang={lang} btn={true} />)}</div>
 <p style="margin-top:1.5rem"><a href={href(lang, '/services')}>{t.seeAll}</a></p></div></section>
 <OrderSteps lang={lang} soft={true} />
 <section><div class="wrap"><h2>{featured.length ? t.featured : t.latest}</h2>
