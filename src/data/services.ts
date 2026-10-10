@@ -17,6 +17,6 @@ export const groups = [
 ];
 // whatsapp: number only (wa.me links need a phone number); bale: Bale username, or +number if there is no username
 export const team = [
-  { fa: 'دکتر آرش صادقی', en: 'Dr. Arash Sadeghi', phone: '+989111347382', telegram: 'ASadeghiT7382', whatsapp: '989111347382', bale: 'ASadeghiT7382' },
+  { fa: 'دکتر آرش صادقی', en: 'Dr. Arash Sadeghi', phone: '+989111347382', telegram: 'ASadeghiT7382', whatsapp: '989111347382', bale: 'AST7382' },
   { fa: 'دکتر هادی صدفی', en: 'Dr. Hadi Sadafi', phone: '+989386386833', telegram: 'hadisf6', whatsapp: '989386386833', bale: '+989386386833' },
 ];

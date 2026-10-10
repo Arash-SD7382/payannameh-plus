@@ -43,10 +43,13 @@ const switchTo = alt || href(other, '/');
 <div><h2>{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)}>{n}</a></li>)}</ul></div>
 <div><h2>{t.contact}</h2><ul>{team.map(p => <li><strong>{p[lang]}</strong><br><a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" /></li>)}</ul></div>
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. {t.rights}</small></div></footer>
-<div class="cbar"><a class="cbar-t" href={href(lang, '/contact')}>{t.contactUs}</a><ContactLinks person={team[0]} who={team[0][lang]} size="bar" /></div>
 <script is:inline>
 var m=document.getElementById('menu-btn'),n=document.getElementById('nav');
-m.addEventListener('click',function(){var o=n.classList.toggle('open');m.setAttribute('aria-expanded',o)});
+function setMenu(o){n.classList.toggle('open',o);m.setAttribute('aria-expanded',o)}
+m.addEventListener('click',function(e){e.stopPropagation();setMenu(!n.classList.contains('open'))});
+document.addEventListener('click',function(e){if(n.classList.contains('open')&&!n.contains(e.target))setMenu(false)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});
+n.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false)});
 document.getElementById('theme').addEventListener('click',function(){var d=document.documentElement,c=d.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'),x=c==='dark'?'light':'dark';d.dataset.theme=x;try{localStorage.setItem('theme',x)}catch(e){}});
 </script>
 </body></html>
