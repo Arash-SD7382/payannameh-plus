@@ -10,14 +10,30 @@ const all = await projectsFor(lang);
 ---
 <Base lang={lang} title={t.nav.projects} description={t.projectsDesc} alt={href(other, '/projects')}>
 <section><div class="wrap"><h1>{t.nav.projects}</h1>
-<div class="toolbar">
-<input id="q" type="search" placeholder={t.searchPh} aria-label={t.searchLabel}>
-<select id="cat" aria-label={t.catLabel}><option value="">{t.allCats}</option>{categories.map(c => <option value={c}>{t.cat[c]}</option>)}</select>
-<select id="sort" aria-label={t.sortLabel}><option value="new">{t.newest}</option><option value="old">{t.oldest}</option></select>
+<div class="sbwrap">
+<div class="sb">
+<div class="sb-glow"></div><div class="sb-dark"></div><div class="sb-white"></div><div class="sb-border"></div>
+<div class="sb-main">
+<input id="q" class="sb-input" type="search" placeholder={t.searchPh} aria-label={t.searchLabel} autocomplete="off" enterkeyhint="search">
+<div class="sb-pmask"></div>
+<div class="sb-fborder"></div>
+<button type="button" id="filter-btn" class="sb-filter" aria-label={`${t.catLabel} / ${t.sortLabel}`} aria-expanded="false" aria-controls="filter-panel">
+<svg preserveAspectRatio="none" height="27" width="27" viewBox="4.8 4.56 14.832 15.408" fill="none" aria-hidden="true"><path d="M8.16 6.65002H15.83C16.47 6.65002 16.99 7.17002 16.99 7.81002V9.09002C16.99 9.56002 16.7 10.14 16.41 10.43L13.91 12.64C13.56 12.93 13.33 13.51 13.33 13.98V16.48C13.33 16.83 13.1 17.29 12.81 17.47L12 17.98C11.24 18.45 10.2 17.92 10.2 16.99V13.91C10.2 13.5 9.97 12.98 9.73 12.69L7.52 10.36C7.23 10.08 7 9.55002 7 9.20002V7.87002C7 7.17002 7.52 6.65002 8.16 6.65002Z" stroke="currentColor" stroke-width="1" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+<div class="sb-sicon" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" fill="none"><circle stroke="url(#sb-s1)" r="8" cy="11" cx="11"></circle><line stroke="url(#sb-s2)" y2="16.65" y1="22" x2="16.65" x1="22"></line><defs><linearGradient gradientTransform="rotate(50)" id="sb-s1"><stop style="stop-color:var(--sb-i1)" offset="0%"></stop><stop style="stop-color:var(--sb-i2)" offset="50%"></stop></linearGradient><linearGradient id="sb-s2"><stop style="stop-color:var(--sb-i2)" offset="0%"></stop><stop style="stop-color:var(--sb-i3)" offset="50%"></stop></linearGradient></defs></svg>
+</div>
+</div>
+</div>
+<div class="sb-panel" id="filter-panel" role="group" aria-label={`${t.catLabel} / ${t.sortLabel}`} hidden>
+<label class="sb-f"><span>{t.catLabel}</span><select id="cat"><option value="">{t.allCats}</option>{categories.map(c => <option value={c}>{t.cat[c]}</option>)}</select></label>
+<label class="sb-f"><span>{t.sortLabel}</span><select id="sort"><option value="new">{t.newest}</option><option value="old">{t.oldest}</option></select></label>
+</div>
 </div>
 <div class="grid" id="list">{all.map(p => <ProjectCard p={p} lang={lang} />)}</div>
 <div class="empty" id="none" hidden>{t.noMatch}</div></div></section>
 <script is:inline>
+(function(){
 var q=document.getElementById('q'),c=document.getElementById('cat'),s=document.getElementById('sort'),l=document.getElementById('list'),n=document.getElementById('none');
 var cards=[].slice.call(l.children),u=new URLSearchParams(location.search);if(u.get('cat'))c.value=u.get('cat');
 function run(){var t=q.value.trim().toLowerCase(),shown=0;
@@ -25,5 +41,13 @@ cards.sort(function(a,b){return s.value==='new'?b.dataset.date-a.dataset.date:a.
 var ok=(!c.value||e.dataset.cat===c.value)&&(!t||(e.dataset.title+' '+e.dataset.cat.toLowerCase()+' '+e.dataset.text).indexOf(t)>-1);e.hidden=!ok;if(ok)shown++});
 n.hidden=shown>0}
 [q,c,s].forEach(function(e){e.addEventListener('input',run)});run();
+var fb=document.getElementById('filter-btn'),fp=document.getElementById('filter-panel');
+function setF(o){fp.hidden=!o;fb.setAttribute('aria-expanded',o)}
+function mark(){fb.classList.toggle('on',!!c.value||s.value!=='new')}
+fb.addEventListener('click',function(e){e.stopPropagation();setF(fp.hidden)});
+document.addEventListener('click',function(e){if(!fp.hidden&&!fp.contains(e.target)&&!fb.contains(e.target))setF(false)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!fp.hidden){setF(false);fb.focus()}});
+[c,s].forEach(function(e){e.addEventListener('input',mark)});mark();
+})();
 </script>
 </Base>
