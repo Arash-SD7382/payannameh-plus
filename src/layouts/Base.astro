@@ -34,8 +34,8 @@ const switchTo = alt || href(other, '/');
 <a class="brand" href={href(lang, '/')}><img src="/images/logo.png" alt={t.brand} width="52" height="52"></a>
 <nav class="main" id="nav" aria-label="Main">{links.map(([n, p]) => <a href={href(lang, p)} aria-current={path.startsWith(p) ? 'page' : undefined}>{n}</a>)}</nav>
 <a class="lang" href={switchTo} hreflang={other} lang={other}>{t.switch}</a>
-<button class="icon-btn" id="theme" aria-label="Toggle dark mode">◐</button>
-<button class="icon-btn" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav">☰</button>
+<label class="theme nt" for="theme"><span class="theme__toggle-wrap"><input id="theme" class="theme__toggle" type="checkbox" role="switch" name="theme" aria-label="Toggle dark mode" autocomplete="off"><span class="theme__icon"><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span></span></span></label>
+<button class="icon-btn hb" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span class="hb-i" aria-hidden="true"><span class="hb-l"></span><span class="hb-l"></span><span class="hb-l"></span></span></button>
 </div></header>
 <main><slot /></main>
 <footer class="site"><div class="wrap">
@@ -44,12 +44,20 @@ const switchTo = alt || href(other, '/');
 <div><h2>{t.contact}</h2><ul>{team.map(p => <li><strong>{p[lang]}</strong><br><a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" /></li>)}</ul></div>
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. {t.rights}</small></div></footer>
 <script is:inline>
+(function(){
 var m=document.getElementById('menu-btn'),n=document.getElementById('nav');
 function setMenu(o){n.classList.toggle('open',o);m.setAttribute('aria-expanded',o)}
 m.addEventListener('click',function(e){e.stopPropagation();setMenu(!n.classList.contains('open'))});
 document.addEventListener('click',function(e){if(n.classList.contains('open')&&!n.contains(e.target))setMenu(false)});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});
 n.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false)});
-document.getElementById('theme').addEventListener('click',function(){var d=document.documentElement,c=d.dataset.theme||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'),x=c==='dark'?'light':'dark';d.dataset.theme=x;try{localStorage.setItem('theme',x)}catch(e){}});
+var tg=document.getElementById('theme'),tl=tg.closest('label'),dd=document.documentElement,mq=matchMedia('(prefers-color-scheme:dark)');
+function curTheme(){return dd.dataset.theme||(mq.matches?'dark':'light')}
+function syncTheme(){tg.checked=curTheme()==='dark'}
+syncTheme();requestAnimationFrame(function(){requestAnimationFrame(function(){tl.classList.remove('nt')})});
+tg.addEventListener('change',function(){var x=tg.checked?'dark':'light';dd.dataset.theme=x;try{localStorage.setItem('theme',x)}catch(e){}});
+window.addEventListener('pageshow',syncTheme);
+if(mq.addEventListener)mq.addEventListener('change',function(){if(!dd.dataset.theme)syncTheme()});
+})();
 </script>
 </body></html>
