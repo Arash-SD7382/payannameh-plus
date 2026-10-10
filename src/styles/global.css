@@ -110,3 +110,13 @@ html[lang=fa] .prose{line-height:2.05}
 .ab h3{margin:1rem 0 .4rem}.ab p{margin:0}
 .abi{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;border-radius:50%;background:rgba(0,87,146,.1);color:var(--link)}
 .abi svg{width:38px;height:38px}
+
+/* glow-border service cards (Uiverse style) - only .scard, project cards are untouched */
+.scard{--glow:linear-gradient(to right,#13b37f 0%,#11a3c8 100%);--glow-o:.5;position:relative;isolation:isolate;overflow:visible;gap:0;padding:1px;border:0;background:var(--glow)}
+:root[data-theme=dark] .scard{--glow-o:.8}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .scard{--glow-o:.8}}
+.scard::after{content:"";position:absolute;top:-12px;left:0;right:0;z-index:-1;height:100%;width:100%;transform:scale(.94);filter:blur(26px);background:var(--glow);opacity:var(--glow-o);pointer-events:none;transition:opacity .5s,top .6s}
+.scard .cover{border-radius:calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0}
+.scard .body{background:var(--bg);border-radius:0 0 calc(var(--r) - 1px) calc(var(--r) - 1px);padding-top:calc(var(--s2) + .5rem)}
+.scard:hover::after{opacity:.5;top:14px}
+@media(max-width:560px){.scard::after{filter:blur(18px)}.grid.g2 .scard .body{padding-top:1.25rem}}
