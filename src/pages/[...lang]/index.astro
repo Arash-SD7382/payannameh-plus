@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
+import AbilityCards from '../../components/AbilityCards.astro';
 import OrderSteps from '../../components/OrderSteps.astro';
 import FaqList from '../../components/FaqList.astro';
 import ServiceCard from '../../components/ServiceCard.astro';
@@ -25,9 +26,10 @@ const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity
 <section><div class="wrap"><h2>{t.whatWeHelp}</h2>
 <div class="grid g2">{svc.map(x => <ServiceCard s={x} lang={lang} btn={true} />)}</div>
 <p style="margin-top:1.5rem"><a href={href(lang, '/services')}>{t.seeAll}</a></p></div></section>
-<OrderSteps lang={lang} soft={true} />
-<section><div class="wrap"><h2>{featured.length ? t.featured : t.latest}</h2>
+<AbilityCards lang={lang} soft={true} />
+<OrderSteps lang={lang} />
+<section class="soft"><div class="wrap"><h2>{featured.length ? t.featured : t.latest}</h2>
 {shown.length ? <div class="grid">{shown.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty">{t.noProjects}</div>}
 <p style="margin-top:1.5rem"><a href={href(lang, '/projects')}>{t.browseAll}</a></p></div></section>
-<FaqList lang={lang} soft={true} />
+<FaqList lang={lang} />
 </Base>

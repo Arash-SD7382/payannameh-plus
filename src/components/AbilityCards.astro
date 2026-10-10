@@ -1,0 +1,9 @@
+---
+import { ui } from '../i18n/ui';
+import { ABILITY_ICONS } from '../data/abilityIcons';
+const { lang, soft = false } = Astro.props; const t = ui[lang];
+---
+<section class={soft ? 'soft' : ''}><div class="wrap">
+<h2>{t.abilitiesTitle}</h2>
+<div class="grid abs">{t.abilities.map(([k, h, d]) => <div class="ab"><span class="abi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ABILITY_ICONS[k]}></svg></span><h3>{h}</h3><p class="muted sm">{d}</p></div>)}</div>
+</div></section>
