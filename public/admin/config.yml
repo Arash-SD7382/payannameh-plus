@@ -2,7 +2,7 @@ backend:
   name: github
   repo: Arash-SD7382/payannameh-plus
   branch: main
-  base_url: https://payannameh-plus.pages.dev
+  base_url: https://payannameh-plus.arashsadeghitamali.workers.dev
   auth_endpoint: api/auth
 media_folder: public/images/uploads
 public_folder: /images/uploads
