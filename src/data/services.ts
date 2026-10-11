@@ -2,11 +2,13 @@ export const groups = [
   { key: 'Writing', fa: 'نگارش', en: 'Writing', items: [
     { fa: 'نگارش پایان‌نامه کارشناسی', en: "Bachelor's Thesis Writing" }, { fa: 'نگارش پایان‌نامه کارشناسی ارشد', en: "Master's Thesis Writing" },
     { fa: 'نگارش رساله دکتری', en: 'PhD Dissertation Writing' }, { fa: 'نگارش تکلیف و پروژه', en: 'Assignment Writing' },
-    { fa: 'نگارش بلاگ', en: 'Blog Writing' }, { fa: 'کپی‌رایتینگ', en: 'Copywriting' }, { fa: 'ساخت پاورپوینت', en: 'PowerPoint Presentations' } ] },
+    { fa: 'نگارش بلاگ', en: 'Blog Writing' }, { fa: 'کپی‌رایتینگ', en: 'Copywriting' }, { fa: 'ساخت پاورپوینت', en: 'PowerPoint Presentations' },
+    { fa: 'نگارش و فرمت‌بندی کتاب', en: 'Book Writing & Formatting' }, { fa: 'طراحی جلد کتاب', en: 'Book Cover Design' } ] },
   { key: 'Articles', fa: 'مقالات علمی', en: 'Academic Articles', items: [
     { fa: 'نگارش مقاله', en: 'Article Writing' }, { fa: 'مقاله علمی پژوهشی', en: 'Scientific-Research Journal Articles' },
     { fa: 'مقاله ISI', en: 'ISI Articles' }, { fa: 'مقاله JCR', en: 'JCR Articles' }, { fa: 'مقاله ISC', en: 'ISC Articles' },
-    { fa: 'مقاله کنفرانسی و همایشی', en: 'Conference & Symposium Papers' }, { fa: 'استخراج مقاله از پایان‌نامه', en: 'Article Extraction from a Thesis' } ] },
+    { fa: 'مقاله کنفرانسی و همایشی', en: 'Conference & Symposium Papers' }, { fa: 'استخراج مقاله از پایان‌نامه', en: 'Article Extraction from a Thesis' },
+    { fa: 'چاپ کتاب و مقالات کنفرانسی', en: 'Publishing Books & Conference Papers' }, { fa: 'نگارش مقاله برای ارتقای شغلی', en: 'Article Writing for Career Promotion' } ] },
   { key: 'Research', fa: 'پژوهش', en: 'Research', items: [
     { fa: 'پروپوزال تحقیقاتی', en: 'Research Proposal' }, { fa: 'پروپوزال پروژه', en: 'Project Proposal' }, { fa: 'جمع‌آوری داده', en: 'Data Collection' } ] },
   { key: 'Editing & Quality', fa: 'ویرایش و کنترل کیفیت', en: 'Editing & Quality', items: [
