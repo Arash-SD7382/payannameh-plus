@@ -170,7 +170,7 @@ html[dir=rtl] .sb-main:focus-within .sb-pmask{pointer-events:none;position:absol
 .theme.nt *,.theme.nt *::before{transition:none!important}
 .theme__icon,.theme__toggle{z-index:1}
 .theme__icon,.theme__icon-part{position:absolute}
-.theme__icon{display:block;top:.5em;left:.5em;width:1.5em;height:1.5em;pointer-events:none;transition:.3s}
+.theme__icon{display:block;top:.75em;left:.75em;width:1.5em;height:1.5em;pointer-events:none;transition:.3s}
 .theme__icon-part{border-radius:50%;box-shadow:.4em -.4em 0 .5em hsl(0,0%,100%) inset;top:calc(50% - .5em);left:calc(50% - .5em);width:1em;height:1em;transition:box-shadow var(--transDur) ease-in-out,opacity var(--transDur) ease-in-out,transform var(--transDur) ease-in-out;transform:scale(.5)}
 .theme__icon-part~.theme__icon-part{background-color:hsl(0,0%,100%);border-radius:.05em;top:50%;left:calc(50% - .05em);transform:rotate(0deg) translateY(.5em);transform-origin:50% 0;width:.1em;height:.2em}
 .theme__icon-part:nth-child(3){transform:rotate(45deg) translateY(.45em)}
@@ -188,7 +188,7 @@ html[dir=rtl] .sb-main:focus-within .sb-pmask{pointer-events:none;position:absol
 .theme__toggle:checked{background-color:hsl(198,90%,15%)}
 .theme__toggle:checked:before,.theme__toggle:checked~.theme__icon{transform:translateX(3em)}
 .theme__toggle:checked:before{background-color:hsl(198,90%,55%)}
-.theme__toggle:checked~.theme__icon .theme__icon-part:nth-child(1){box-shadow:.2em -.2em 0 .2em hsl(0,0%,100%) inset;transform:scale(1);top:.2em;left:-.2em}
+.theme__toggle:checked~.theme__icon .theme__icon-part:nth-child(1){box-shadow:.2em -.2em 0 .2em hsl(0,0%,100%) inset;transform:scale(1);top:.15em;left:.35em}
 .theme__toggle:checked~.theme__icon .theme__icon-part~.theme__icon-part{opacity:0}
 .theme__toggle:checked~.theme__icon .theme__icon-part:nth-child(2){transform:rotate(45deg) translateY(.8em)}
 .theme__toggle:checked~.theme__icon .theme__icon-part:nth-child(3){transform:rotate(90deg) translateY(.8em)}
