@@ -9,9 +9,28 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === '/api/auth') return startLogin(url, env);
     if (url.pathname === '/api/callback') return finishLogin(request, url, env);
-    return env.ASSETS.fetch(request);
+    const res = await env.ASSETS.fetch(request);
+    if (res.status !== 404) return res;
+    return notFound(request, env, url, res);
   },
 };
+
+// Unknown address: show the site's own 404 page (Persian, or English under /en/) with a real 404 status.
+async function notFound(request, env, url, original) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') return original;
+  const english = url.pathname === '/en' || url.pathname.startsWith('/en/');
+  // canonical asset addresses (html_handling = auto-trailing-slash): /404 and /en/404/
+  let page = await env.ASSETS.fetch(new Request(new URL(english ? '/en/404/' : '/404', url.origin)));
+  // follow one redirect in case the asset layer normalizes the address
+  if (page.status >= 300 && page.status < 400 && page.headers.get('Location')) {
+    page = await env.ASSETS.fetch(new Request(new URL(page.headers.get('Location'), url.origin)));
+  }
+  if (!page.ok) return original;
+  return new Response(request.method === 'HEAD' ? null : page.body, {
+    status: 404,
+    headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'no-store' },
+  });
+}
 
 // Step 1: send the user to GitHub to approve the login.
 function startLogin(url, env) {

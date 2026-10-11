@@ -208,3 +208,30 @@ html[dir=rtl] .sb-main:focus-within .sb-pmask{pointer-events:none;position:absol
 .hb[aria-expanded=true] .hb-l:nth-child(1){transform:rotate(35deg) scaleX(.55) translate(39px,-4.5px);border-radius:50px 50px 50px 0}
 .hb[aria-expanded=true] .hb-l:nth-child(3){transform:rotate(-35deg) scaleX(.55) translate(39px,4.5px);border-radius:0 50px 50px 50px}
 .hb[aria-expanded=true] .hb-l:nth-child(2){border-top-right-radius:50px;border-bottom-right-radius:50px;width:45px}
+
+/* custom 404 page */
+.nf{text-align:center;padding-block:clamp(2.5rem,8vw,5rem)}
+.nf-art{width:min(300px,72vw);height:auto;margin:0 auto var(--s2);overflow:visible}
+.nf-shadow{fill:var(--head);opacity:.12;transform-box:fill-box;transform-origin:center;animation:nfShadow 4s ease-in-out infinite}
+.nf-paper{fill:var(--bg);stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.nf-fold{fill:var(--soft);stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+.nf-line{fill:var(--line)}
+.nf-gold{fill:var(--gold)}
+.nf-sheet{animation:nfFloat 4s ease-in-out infinite}
+.nf-glass{fill:rgba(0,187,240,.14);stroke:var(--gold);stroke-width:7}
+.nf-handle{stroke:var(--gold);stroke-width:9;stroke-linecap:round;fill:none}
+.nf-q{fill:none;stroke:var(--head);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.nf-qdot{fill:var(--head)}
+.nf-lens{transform-box:fill-box;transform-origin:center;animation:nfSearch 5s ease-in-out infinite}
+@keyframes nfFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes nfShadow{0%,100%{transform:scaleX(1);opacity:.12}50%{transform:scaleX(.88);opacity:.08}}
+@keyframes nfSearch{0%,100%{transform:translate(0,0) rotate(0)}30%{transform:translate(-26px,-12px) rotate(-6deg)}65%{transform:translate(-6px,8px) rotate(4deg)}}
+.nf-code{margin:0;font-size:clamp(4.5rem,20vw,8.5rem);font-weight:800;line-height:1.1;letter-spacing:-.03em;direction:ltr;background:linear-gradient(120deg,var(--head) 0%,var(--link) 55%,var(--sky) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+html[lang=fa] .nf-code{letter-spacing:0}
+.nf-title{margin:.25rem 0 .5rem;font-size:clamp(1.3rem,4vw,1.8rem)}
+.nf-text{max-width:46ch;margin:0 auto}
+.nf-actions{justify-content:center;margin-top:var(--s3)}
+.nf-hint{margin:var(--s4) 0 .6rem}
+.nf-links{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin:0}
+.nf-links .badge{font-size:.9rem;padding:.35rem .9rem}.nf-links .badge:hover{border-color:var(--blue)}
+@media(prefers-reduced-motion:reduce){.nf-sheet,.nf-lens,.nf-shadow{animation:none}}

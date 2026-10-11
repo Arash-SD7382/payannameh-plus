@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import { ui, href } from '../i18n/ui';
+const { lang } = Astro.props;
+const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
+const x = lang === 'fa'
+  ? { code: '۴۰۴', hint: 'می‌توانید از این بخش‌ها ادامه بدهید:' }
+  : { code: '404', hint: 'You can continue from one of these:' };
+---
+<Base lang={lang} title="404" alt={href(other, '/')}>
+<section class="nf"><div class="wrap">
+  <svg class="nf-art" viewBox="0 0 240 170" role="presentation" aria-hidden="true" focusable="false">
+    <ellipse class="nf-shadow" cx="120" cy="156" rx="62" ry="7"/>
+    <g class="nf-sheet">
+      <path class="nf-paper" d="M62 14h80l36 36v94a8 8 0 0 1-8 8H62a8 8 0 0 1-8-8V22a8 8 0 0 1 8-8z"/>
+      <path class="nf-fold" d="M142 14v28a8 8 0 0 0 8 8h28z"/>
+      <rect class="nf-line" x="70" y="62" width="64" height="6" rx="3"/>
+      <rect class="nf-line" x="70" y="78" width="88" height="6" rx="3"/>
+      <rect class="nf-line" x="70" y="94" width="52" height="6" rx="3"/>
+      <rect class="nf-line" x="70" y="110" width="76" height="6" rx="3"/>
+      <rect class="nf-gold" x="70" y="28" width="40" height="6" rx="3"/>
+    </g>
+    <g class="nf-lens">
+      <circle class="nf-glass" cx="150" cy="104" r="26"/>
+      <path class="nf-handle" d="M169 123l22 22"/>
+      <path class="nf-q" d="M142 97a8 8 0 1 1 11 7.4c-2.2 1-3 2.2-3 4.6"/>
+      <circle class="nf-qdot" cx="150" cy="118" r="2.4"/>
+    </g>
+  </svg>
+  <p class="nf-code" aria-hidden="true">{x.code}</p>
+  <h1 class="nf-title">{t.notFound}</h1>
+  <p class="muted nf-text">{t.notFoundText}</p>
+  <div class="actions nf-actions"><a class="btn" href={href(lang, '/')}>{t.backHome}</a></div>
+  <p class="muted sm nf-hint">{x.hint}</p>
+  <p class="nf-links"><a class="badge" href={href(lang, '/projects')}>{t.nav.projects}</a><a class="badge" href={href(lang, '/services')}>{t.nav.services}</a><a class="badge" href={href(lang, '/contact')}>{t.nav.contact}</a></p>
+</div></section>
+</Base>
