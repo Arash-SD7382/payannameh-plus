@@ -294,6 +294,21 @@ switch ($a) {
         json_out(['ok' => true, 'patch' => cms_patch_site(), 'items' => cms_generate_items()]);
     }
 
+    case 'cron': {
+        // called by a scheduled job on the host; no login, protected by a secret token
+        $t = cms_cron_token(false);
+        $sent = isset($_GET['t']) ? (string) $_GET['t'] : '';
+        if ($t === '' || !hash_equals($t, $sent)) json_out(['error' => 'forbidden'], 403);
+        json_out(['ok' => true, 'patch' => cms_patch_site(), 'items' => cms_generate_items()]);
+    }
+
+    case 'cron_info': {
+        cms_require_auth(false);
+        $t = cms_cron_token(true);
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        json_out(['url' => $scheme . '://' . $_SERVER['HTTP_HOST'] . '/cms-api/?a=cron&t=' . $t]);
+    }
+
     case 'items': {
         cms_require_auth(false);
         $rows = cms_item_rows();

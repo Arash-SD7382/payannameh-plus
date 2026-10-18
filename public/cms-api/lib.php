@@ -234,3 +234,17 @@ function cms_check_pass($uid, $pass) {
     $row = $st->fetch();
     if (!$row || !password_verify((string) $pass, $row['pass_hash'])) json_out(['error' => 'bad_old_password'], 400);
 }
+
+/* secret token for the scheduled "reapply" call (stored in a PHP file that prints nothing if opened) */
+function cms_cron_token($create) {
+    $f = CMS_DATA . '/cron-token.php';
+    if (is_file($f)) {
+        $t = trim(substr((string) file_get_contents($f), strlen('<?php exit; ?>')));
+        if (preg_match('/^[a-f0-9]{40}$/', $t)) return $t;
+    }
+    if (!$create) return '';
+    if (!is_dir(CMS_DATA)) @mkdir(CMS_DATA, 0755, true);
+    $t = bin2hex(random_bytes(20));
+    file_put_contents($f, '<?php exit; ?>' . $t, LOCK_EX);
+    return $t;
+}

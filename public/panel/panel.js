@@ -481,7 +481,17 @@
       } })]));
     }
     function loadUsers() { req('users').then(function (d) { if (d.users) drawUsers(d.users); else toast(errText(d.error), true); }); }
-    [logo, backup, pw, unCard, usersBox].forEach(function (s) { box.appendChild(s); });
+    var cronBox = h('section', { class: 'card tool' }, [h('h3', { text: 'به‌روزرسانی خودکار بعد از آپلود سایت' }), h('p', { class: 'muted', text: 'در حال بارگذاری…' })]);
+    req('cron_info').then(function (d) {
+      if (!d.url) return;
+      cronBox.textContent = '';
+      var cmd = 'curl -s "' + d.url + '" > /dev/null';
+      var ta = h('textarea', { rows: '3', dir: 'ltr', readonly: 'readonly' }); ta.value = cmd;
+      cronBox.appendChild(h('h3', { text: 'به‌روزرسانی خودکار بعد از آپلود سایت' }));
+      cronBox.appendChild(h('p', { class: 'muted', text: 'این دستور را در بخش Cron Jobs هاست (cPanel) با زمان‌بندی «هر ۱۰ دقیقه» بگذارید تا بعد از هر آپلود سایت، تغییرهای پنل خودکار برگردند. آدرس محرمانه است و آن را به کسی ندهید.' }));
+      cronBox.appendChild(ta);
+    });
+    [logo, backup, pw, unCard, usersBox, cronBox].forEach(function (s) { box.appendChild(s); });
     loadUsers();
   }
 
