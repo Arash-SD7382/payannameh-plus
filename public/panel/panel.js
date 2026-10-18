@@ -290,6 +290,54 @@
     return h('div', null, kids);
   }
 
+  /* ---------- visual editor: page HTML -> Markdown ---------- */
+  function htmlToMd(root) {
+    function inl(n) {
+      var out = '';
+      Array.prototype.forEach.call(n.childNodes, function (c) {
+        if (c.nodeType === 3) { out += c.nodeValue.replace(/ /g, ' ').replace(/\s*\n\s*/g, ' '); return; }
+        if (c.nodeType !== 1) return;
+        var t = c.tagName, inner;
+        if (t === 'BR') { out += '\n\n'; return; }
+        if (t === 'IMG') { out += '![' + (c.getAttribute('alt') || '') + '](' + (c.getAttribute('src') || '') + ')'; return; }
+        inner = inl(c);
+        if (t === 'STRONG' || t === 'B' || t === 'EM' || t === 'I') {
+          var m = (t === 'STRONG' || t === 'B') ? '**' : '*';
+          var core = inner.replace(/^\s+|\s+$/g, '');
+          if (!core) { out += inner; return; }
+          out += (/^\s/.test(inner) ? ' ' : '') + m + core + m + (/\s$/.test(inner) ? ' ' : '');
+        } else if (t === 'A') {
+          var hr = c.getAttribute('href') || '';
+          out += (hr && inner.trim()) ? '[' + inner.trim() + '](' + hr + ')' : inner;
+        } else if (t === 'CODE') out += '`' + inner + '`';
+        else out += inner;
+      });
+      return out;
+    }
+    function blocks(el) {
+      var parts = [];
+      Array.prototype.forEach.call(el.childNodes, function (c) {
+        if (c.nodeType === 3) { var x = c.nodeValue.replace(/\s+/g, ' ').trim(); if (x) parts.push(x); return; }
+        if (c.nodeType !== 1) return;
+        var t = c.tagName, x;
+        if (/^H[1-6]$/.test(t)) { x = inl(c).trim(); if (x) parts.push('######'.slice(0, +t[1]) + ' ' + x); }
+        else if (t === 'UL' || t === 'OL') {
+          var n = 0, items = [];
+          Array.prototype.forEach.call(c.children, function (li) { var v = inl(li).replace(/\n+/g, ' ').trim(); if (v) items.push((t === 'OL' ? (++n) + '. ' : '- ') + v); });
+          if (items.length) parts.push(items.join('\n'));
+        }
+        else if (t === 'BLOCKQUOTE') { x = inl(c).trim(); if (x) parts.push(x.split('\n').map(function (l) { return '> ' + l; }).join('\n')); }
+        else if (t === 'PRE') parts.push('```\n' + c.textContent.replace(/\n$/, '') + '\n```');
+        else if (t === 'HR') parts.push('---');
+        else if (t === 'IMG') parts.push(inl({ childNodes: [c] }));
+        else if (t === 'DIV' || t === 'SECTION' || ((t === 'P' || t === 'LI') && c.querySelector('ul,ol,p,h1,h2,h3,h4,h5,h6,blockquote,pre'))) { x = blocks(c); if (x) parts.push(x); }
+        else { x = inl({ childNodes: [c] }).trim(); if (x) parts.push(x); }
+      });
+      return parts.join('\n\n').replace(/\n{3,}/g, '\n\n');
+    }
+    return blocks(root).trim();
+  }
+
   function renderItemEditor(type, ed) {
     var box = $('content'); box.textContent = '';
     var isP = type === 'project';
@@ -327,32 +375,84 @@
       box.appendChild(imageField('تصویر خدمت', function () { return d.image; }, function (u) { d.image = u; }, alt2));
     }
     var body = it.body || '';
-    var ta = txt('متن کامل صفحه', body, function (v) { body = v; }, 16);
-    box.appendChild(h('p', { class: 'muted', text: 'راهنما: «## عنوان بخش»، «- مورد لیست»، «**پررنگ**»، «[متن لینک](https://…)»، «![توضیح](آدرس عکس)». برای هر پاراگراف یک خط خالی بگذارید.' }));
-    var pv = h('div', { class: 'prose card', hidden: true });
-    var imgFile = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp' });
+    var mode = 'visual';
+    box.appendChild(h('label', { text: 'متن کامل صفحه' }));
+    var ta = h('textarea', { rows: '16', dir: rtl, hidden: true });
+    ta.value = body;
+    ta.addEventListener('input', function () { body = ta.value; });
+    var area = h('div', { class: 'wys', contenteditable: 'true', dir: rtl, lang: ed.lang });
+    area.classList.add('prose');
+    var bar = h('div', { class: 'wbar' });
+    var imgFile = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp', hidden: true });
+    function cmd(c, v) { area.focus(); document.execCommand(c, false, v || null); sync(); }
+    function sync() { body = htmlToMd(area); }
+    function tb(label, title, fn) { bar.appendChild(h('button', { type: 'button', class: 'ghost', title: title, text: label, onmousedown: function (e) { e.preventDefault(); }, onclick: fn })); }
+    tb('B', 'پررنگ', function () { cmd('bold'); });
+    tb('I', 'مورب', function () { cmd('italic'); });
+    tb('عنوان', 'عنوان بخش', function () { cmd('formatBlock', 'h2'); });
+    tb('زیرعنوان', 'عنوان کوچک‌تر', function () { cmd('formatBlock', 'h3'); });
+    tb('پاراگراف', 'متن معمولی', function () { cmd('formatBlock', 'p'); });
+    tb('• لیست', 'لیست نقطه‌ای', function () { cmd('insertUnorderedList'); });
+    tb('۱. لیست', 'لیست شماره‌دار', function () { cmd('insertOrderedList'); });
+    tb('نقل‌قول', 'نقل‌قول', function () { cmd('formatBlock', 'blockquote'); });
+    tb('لینک', 'افزودن لینک به متن انتخاب‌شده', function () {
+      var u = (prompt('آدرس لینک (با https:// شروع شود):', 'https://') || '').trim();
+      if (!u) return;
+      if (!/^(https?:\/\/|\/|mailto:|tel:)/i.test(u)) { toast('آدرس لینک باید با https:// شروع شود.', true); return; }
+      cmd('createLink', u);
+    });
+    tb('حذف لینک', 'برداشتن لینک', function () { cmd('unlink'); });
+    tb('عکس', 'گذاشتن عکس در متن', function () { imgFile.click(); });
+    tb('↶', 'بازگرداندن', function () { cmd('undo'); });
+    tb('↷', 'تکرار', function () { cmd('redo'); });
+    area.addEventListener('input', sync);
+    area.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, t);
+    });
+    try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
     imgFile.addEventListener('change', function () {
       if (!imgFile.files.length) return;
       var fd = new FormData(); fd.append('file', imgFile.files[0]);
       req('image', { form: fd }).then(function (r2) {
         imgFile.value = '';
         if (!r2.url) { toast(r2.error === 'too_big' ? 'حجم تصویر بیشتر از ۳ مگابایت است.' : errText(r2.error), true); return; }
-        var pos = ta.selectionStart || ta.value.length; var ins = '\n\n![توضیح تصویر](' + r2.url + ')\n\n';
-        ta.value = ta.value.slice(0, pos) + ins + ta.value.slice(pos); body = ta.value; toast('تصویر در متن گذاشته شد.');
+        var alt = (prompt('توضیح کوتاه تصویر (برای نابینایان و گوگل):', '') || '').replace(/[\[\]<>"]/g, '');
+        if (mode === 'visual') {
+          area.focus();
+          document.execCommand('insertHTML', false, '<p><img src="' + r2.url + '" alt="' + alt + '"></p>');
+          sync();
+        } else {
+          var pos = ta.selectionStart || ta.value.length;
+          ta.value = ta.value.slice(0, pos) + '\n\n![' + alt + '](' + r2.url + ')\n\n' + ta.value.slice(pos); body = ta.value;
+        }
+        toast('تصویر در متن گذاشته شد.');
       });
     });
-    box.appendChild(h('div', { class: 'actions' }, [
-      h('button', { type: 'button', class: 'ghost', text: 'پیش‌نمایش متن', onclick: function () {
-        if (!pv.hidden) { pv.hidden = true; return; }
-        req('preview', { json: { body: body } }).then(function (r3) { pv.innerHTML = r3.html || ''; pv.hidden = false; pv.setAttribute('dir', rtl); });
-      } })
-    ]));
-    box.appendChild(h('label', { text: 'گذاشتن عکس در متن' })); box.appendChild(imgFile);
-    box.appendChild(pv);
+    function loadVisual() {
+      area.textContent = '';
+      if (!body.trim()) { area.innerHTML = '<p><br></p>'; return Promise.resolve(); }
+      return req('preview', { json: { body: body } }).then(function (r3) { area.innerHTML = r3.html || '<p><br></p>'; });
+    }
+    var modeBtn = h('button', { type: 'button', class: 'ghost', text: 'حالت Markdown (پیشرفته)', onclick: function () {
+      if (mode === 'visual') {
+        sync(); ta.value = body; mode = 'md';
+        area.hidden = true; bar.hidden = true; ta.hidden = false; modeBtn.textContent = 'برگشت به ویرایشگر دیداری';
+      } else {
+        body = ta.value; mode = 'visual';
+        ta.hidden = true; area.hidden = false; bar.hidden = false; modeBtn.textContent = 'حالت Markdown (پیشرفته)';
+        loadVisual();
+      }
+    } });
+    box.appendChild(bar); box.appendChild(area); box.appendChild(ta); box.appendChild(imgFile);
+    box.appendChild(h('div', { class: 'actions' }, [modeBtn]));
+    loadVisual();
+    var pv = h('div', { hidden: true });
     var acts = [
       h('button', { type: 'button', class: 'btn', text: 'ذخیره', onclick: function (ev) {
         var b = ev.currentTarget; b.disabled = true;
-        req('item_save', { json: { type: type, lang: ed.lang, key: slug, isNew: ed.isNew, data: d, body: body } }).then(function (r4) {
+        req('item_save', { json: { type: type, lang: ed.lang, key: slug, isNew: ed.isNew, data: d, body: (mode === 'visual' ? htmlToMd(area) : ta.value) } }).then(function (r4) {
           b.disabled = false;
           if (!r4.ok) { toast(errText(r4.error), true); return; }
           toast('ذخیره شد و در سایت اعمال شد.');
