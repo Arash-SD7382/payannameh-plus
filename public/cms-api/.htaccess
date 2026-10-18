@@ -1,0 +1,13 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# These files are only used by PHP itself and must never be opened from a browser.
+<FilesMatch "^(lib\.php|config\.sample\.php|config\.local\.php)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

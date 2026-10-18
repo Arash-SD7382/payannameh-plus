@@ -17,19 +17,19 @@ const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity
 ---
 <Base lang={lang} title={t.brand} alt={href(other, '/')} jsonld={faqLd}>
 <section class="hero"><div class="wrap">
-<div class="rule"></div><h1>{t.heroTitle}</h1><p>{t.heroText}</p>
-<div class="actions"><a class="btn" href={href(lang, '/projects')}>{t.viewProjects}</a><a class="btn ghost" href={href(lang, '/services')}>{t.ourServices}</a></div>
-<div class="stats" style="margin-top:2.5rem">{t.stats.map(([v, l]) => <div class="stat"><strong dir="ltr">{v}</strong><span>{l}</span></div>)}</div>
+<div class="rule"></div><h1 data-cms="heroTitle">{t.heroTitle}</h1><p data-cms="heroText">{t.heroText}</p>
+<div class="actions"><a class="btn" href={href(lang, '/projects')} data-cms="viewProjects">{t.viewProjects}</a><a class="btn ghost" href={href(lang, '/services')} data-cms="ourServices">{t.ourServices}</a></div>
+<div class="stats" style="margin-top:2.5rem">{t.stats.map(([v, l], i) => <div class="stat"><strong dir="ltr" data-cms={`stats.${i}.0`}>{v}</strong><span data-cms={`stats.${i}.1`}>{l}</span></div>)}</div>
 </div></section>
-<section class="soft"><div class="wrap" style="max-width:820px"><h2>{t.nav.about}</h2><p class="prose" style="font-size:1.1rem">{t.introText}</p>
-<p><a href={href(lang, '/about')}>{t.readMore}</a></p></div></section>
-<section><div class="wrap"><h2>{t.whatWeHelp}</h2>
+<section class="soft"><div class="wrap" style="max-width:820px"><h2>{t.nav.about}</h2><p class="prose" style="font-size:1.1rem" data-cms="introText">{t.introText}</p>
+<p><a href={href(lang, '/about')} data-cms="readMore">{t.readMore}</a></p></div></section>
+<section><div class="wrap"><h2 data-cms="whatWeHelp">{t.whatWeHelp}</h2>
 <div class="grid g2">{svc.map(x => <ServiceCard s={x} lang={lang} btn={true} />)}</div>
-<p style="margin-top:1.5rem"><a href={href(lang, '/services')}>{t.seeAll}</a></p></div></section>
+<p style="margin-top:1.5rem"><a href={href(lang, '/services')} data-cms="seeAll">{t.seeAll}</a></p></div></section>
 <AbilityCards lang={lang} soft={true} />
 <OrderSteps lang={lang} />
-<section class="soft"><div class="wrap"><h2>{featured.length ? t.featured : t.latest}</h2>
-{shown.length ? <div class="grid">{shown.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty">{t.noProjects}</div>}
-<p style="margin-top:1.5rem"><a href={href(lang, '/projects')}>{t.browseAll}</a></p></div></section>
+<section class="soft"><div class="wrap"><h2 data-cms={featured.length ? 'featured' : 'latest'}>{featured.length ? t.featured : t.latest}</h2>
+{shown.length ? <div class="grid">{shown.map(p => <ProjectCard p={p} lang={lang} />)}</div> : <div class="empty" data-cms="noProjects">{t.noProjects}</div>}
+<p style="margin-top:1.5rem"><a href={href(lang, '/projects')} data-cms="browseAll">{t.browseAll}</a></p></div></section>
 <FaqList lang={lang} />
 </Base>

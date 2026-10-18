@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>پنل مدیریت</title>
+<link rel="icon" href="/images/mark.png">
+<link rel="stylesheet" href="/panel/panel.css">
+</head>
+<body>
+<noscript><p style="padding:2rem">برای استفاده از پنل، جاوااسکریپت مرورگر باید فعال باشد.</p></noscript>
+
+<section id="login" class="login" hidden>
+  <form id="login-form" class="card" autocomplete="on">
+    <img src="/images/logo.png" alt="" width="64" height="64" data-cms-logo>
+    <h1>ورود به پنل مدیریت</h1>
+    <label for="lu">نام کاربری</label>
+    <input id="lu" name="username" autocomplete="username" required dir="ltr">
+    <label for="lp">رمز عبور</label>
+    <input id="lp" name="password" type="password" autocomplete="current-password" required dir="ltr">
+    <p id="login-msg" class="msg" role="alert"></p>
+    <button class="btn" type="submit">ورود</button>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header class="top">
+    <strong>پنل مدیریت</strong>
+    <span class="grow"></span>
+    <a class="link" href="/" target="_blank" rel="noopener">مشاهده سایت</a>
+    <button id="logout" class="ghost" type="button">خروج</button>
+  </header>
+
+  <div class="layout">
+    <nav id="nav" class="side" aria-label="بخش‌ها"></nav>
+
+    <main class="main">
+      <div id="langbar" class="langbar" role="tablist" aria-label="زبان">
+        <button type="button" role="tab" data-lang="fa" aria-selected="true">فارسی</button>
+        <button type="button" role="tab" data-lang="en" aria-selected="false">English</button>
+      </div>
+      <p id="lang-note" class="muted"></p>
+      <div id="content"></div>
+    </main>
+  </div>
+
+  <div id="savebar" class="savebar" hidden>
+    <span id="savecount"></span>
+    <button id="discard" class="ghost" type="button">لغو تغییرات</button>
+    <button id="save" class="btn" type="button">ذخیره</button>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="/panel/panel.js"></script>
+</body>
+</html>

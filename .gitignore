@@ -2,3 +2,6 @@ node_modules/
 dist/
 .astro/
 .DS_Store
+public/cms-api/config.local.php
+public/cms-api/data/
+public/cms-api/uploads/logo-*

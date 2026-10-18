@@ -31,7 +31,7 @@ const switchTo = alt || href(other, '/');
 </head>
 <body>
 <header class="site"><div class="wrap">
-<a class="brand" href={href(lang, '/')}><img src="/images/logo.png" alt={t.brand} width="52" height="52"></a>
+<a class="brand" href={href(lang, '/')}><img src="/images/logo.png" alt={t.brand} width="52" height="52" data-cms-logo></a>
 <nav class="main" id="nav" aria-label="Main">{links.map(([n, p]) => <a href={href(lang, p)} aria-current={path.startsWith(p) ? 'page' : undefined}>{n}</a>)}</nav>
 <a class="lang" href={switchTo} hreflang={other} lang={other}>{t.switch}</a>
 <label class="theme nt" for="theme"><span class="theme__toggle-wrap"><input id="theme" class="theme__toggle" type="checkbox" role="switch" name="theme" aria-label="Toggle dark mode" autocomplete="off"><span class="theme__icon"><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span></span></span></label>
@@ -39,10 +39,10 @@ const switchTo = alt || href(other, '/');
 </div></header>
 <main><slot /></main>
 <footer class="site"><div class="wrap">
-<div><h2>{t.brand}</h2><p>{t.tagline}</p></div>
+<div><h2>{t.brand}</h2><p data-cms="tagline">{t.tagline}</p></div>
 <div><h2>{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)}>{n}</a></li>)}</ul></div>
 <div><h2>{t.contact}</h2><ul>{team.map(p => <li><strong>{p[lang]}</strong><br><a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" /></li>)}</ul></div>
-</div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. {t.rights}</small></div></footer>
+</div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. <span data-cms="rights">{t.rights}</span></small></div></footer>
 <script is:inline>
 (function(){
 var m=document.getElementById('menu-btn'),n=document.getElementById('nav');
@@ -60,4 +60,5 @@ window.addEventListener('pageshow',syncTheme);
 if(mq.addEventListener)mq.addEventListener('change',function(){if(!dd.dataset.theme)syncTheme()});
 })();
 </script>
+<script src="/cms.js" defer></script>
 </body></html>
