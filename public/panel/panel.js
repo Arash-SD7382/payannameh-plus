@@ -2,7 +2,7 @@
   'use strict';
 
   var API = '/cms-api/';
-  var csrf = '';
+  var csrf = '', me = '';
   var schema = null;                       // { groups, defaults:{fa,en} } built with the site
   var saved = { fa: {}, en: {}, all: {} }; // what the server has
   var pending = {};                        // "lang|key" -> string (new text) or null (back to default)
@@ -22,7 +22,10 @@
     bad_type: 'فقط تصویر PNG، JPG یا WebP قبول است.',
     no_file: 'فایلی انتخاب نشده است.',
     weak_password: 'رمز جدید باید حداقل ۸ نویسه باشد.',
-    bad_old_password: 'رمز فعلی درست نیست.',
+    bad_old_password: 'رمز فعلی شما درست نیست.',
+    bad_username: 'نام کاربری فقط حروف انگلیسی، عدد، نقطه، خط تیره و _ باشد (۳ تا ۵۰ نویسه).',
+    username_taken: 'این نام کاربری قبلا گرفته شده است.',
+    cannot_delete_self: 'حساب خودتان را نمی‌شود حذف کرد.',
     bad_backup: 'این فایل، فایل پشتیبان این سایت نیست.',
     network: 'ارتباط با سرور برقرار نشد. اینترنت را بررسی کنید.',
     bad_title: 'عنوان خالی است یا از ۲۰۰ نویسه بیشتر است.',
@@ -82,7 +85,7 @@
     e.preventDefault();
     $('login-msg').textContent = '';
     req('login', { json: { username: $('lu').value, password: $('lp').value } }).then(function (d) {
-      if (d.auth) { csrf = d.csrf; $('lp').value = ''; boot(); }
+      if (d.auth) { csrf = d.csrf; me = d.user; $('lp').value = ''; boot(); }
       else $('login-msg').textContent = errText(d.error);
     });
   });
@@ -427,7 +430,59 @@
         });
       } })])
     ]);
-    [logo, backup, pw].forEach(function (s) { box.appendChild(s); });
+    // change own username
+    var un = h('input', { type: 'text', dir: 'ltr', autocomplete: 'username' });
+    var unp = h('input', { type: 'password', autocomplete: 'current-password', dir: 'ltr' });
+    var unCard = h('section', { class: 'card tool' }, [
+      h('h3', { text: 'تغییر نام کاربری' }),
+      h('p', { class: 'muted', text: 'نام کاربری فعلی: ' + (me || '') }),
+      h('label', { text: 'نام کاربری جدید' }), un,
+      h('label', { text: 'رمز فعلی خودتان' }), unp,
+      h('div', { class: 'actions' }, [h('button', { type: 'button', class: 'btn', text: 'تغییر نام کاربری', onclick: function () {
+        req('username', { json: { username: un.value, password: unp.value } }).then(function (d) {
+          if (d.ok) { me = d.user; unp.value = ''; un.value = ''; toast('نام کاربری عوض شد.'); renderTools(); } else toast(errText(d.error), true);
+        });
+      } })])
+    ]);
+    // accounts
+    var usersBox = h('section', { class: 'card tool' }, [h('h3', { text: 'حساب‌های کاربری' }), h('p', { class: 'muted', text: 'در حال بارگذاری…' })]);
+    function drawUsers(list) {
+      usersBox.textContent = '';
+      usersBox.appendChild(h('h3', { text: 'حساب‌های کاربری' }));
+      usersBox.appendChild(h('p', { class: 'muted', text: 'هر نفر با حساب جدا وارد می‌شود و همه می‌توانند سایت را ویرایش کنند. برای هر کار روی حساب‌ها، رمز خودتان لازم است.' }));
+      var gp = h('input', { type: 'password', autocomplete: 'current-password', dir: 'ltr' });
+      usersBox.appendChild(h('label', { text: 'رمز فعلی خودتان (برای تایید کارهای پایین)' }));
+      usersBox.appendChild(gp);
+      list.forEach(function (x) {
+        var np = h('input', { type: 'password', autocomplete: 'new-password', dir: 'ltr', placeholder: 'رمز جدید (حداقل ۸ نویسه)', style: 'flex:1;min-width:10rem' });
+        var kids = [h('strong', { text: x.username + (x.self ? ' (شما)' : ''), style: 'min-width:8rem' }), np,
+          h('button', { type: 'button', class: 'reset', text: 'تغییر رمز', onclick: function () {
+            req('user_setpass', { json: { id: x.id, password: gp.value, 'new': np.value } }).then(function (d) {
+              if (d.ok) { np.value = ''; toast('رمز ' + x.username + ' عوض شد.'); } else toast(errText(d.error), true);
+            });
+          } })];
+        if (!x.self) kids.push(h('button', { type: 'button', class: 'reset', text: 'حذف حساب', onclick: function () {
+          if (!confirm('حساب «' + x.username + '» حذف شود؟')) return;
+          req('user_delete', { json: { id: x.id, password: gp.value } }).then(function (d) {
+            if (d.ok) { toast('حساب حذف شد.'); loadUsers(); } else toast(errText(d.error), true);
+          });
+        } }));
+        usersBox.appendChild(h('div', { class: 'field' }, [h('div', { class: 'row' }, kids)]));
+      });
+      usersBox.appendChild(h('h3', { text: 'افزودن حساب جدید', style: 'margin-top:1.2rem' }));
+      var an = h('input', { type: 'text', dir: 'ltr', autocomplete: 'off' });
+      var ap = h('input', { type: 'password', dir: 'ltr', autocomplete: 'new-password' });
+      usersBox.appendChild(h('label', { text: 'نام کاربری' })); usersBox.appendChild(an);
+      usersBox.appendChild(h('label', { text: 'رمز عبور (حداقل ۸ نویسه)' })); usersBox.appendChild(ap);
+      usersBox.appendChild(h('div', { class: 'actions' }, [h('button', { type: 'button', class: 'btn', text: 'افزودن حساب', onclick: function () {
+        req('user_add', { json: { username: an.value, 'new': ap.value, password: gp.value } }).then(function (d) {
+          if (d.ok) { toast('حساب ساخته شد.'); loadUsers(); } else toast(errText(d.error), true);
+        });
+      } })]));
+    }
+    function loadUsers() { req('users').then(function (d) { if (d.users) drawUsers(d.users); else toast(errText(d.error), true); }); }
+    [logo, backup, pw, unCard, usersBox].forEach(function (s) { box.appendChild(s); });
+    loadUsers();
   }
 
   function render() {
@@ -501,7 +556,7 @@
   }
 
   req('me').then(function (d) {
-    if (d.auth) { csrf = d.csrf; boot(); }
+    if (d.auth) { csrf = d.csrf; me = d.user; boot(); }
     else if (d.error === 'not_installed') { showLogin(); $('login-msg').textContent = errText('not_installed'); }
     else showLogin();
   });

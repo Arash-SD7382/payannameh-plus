@@ -134,6 +134,77 @@ switch ($a) {
         json_out(['ok' => true]);
     }
 
+    case 'users': {
+        $u = cms_require_auth(false);
+        $rows = cms_db()->query('SELECT id, username, created_at FROM cms_users ORDER BY id')->fetchAll();
+        $out = [];
+        foreach ($rows as $r) $out[] = ['id' => (int) $r['id'], 'username' => $r['username'], 'created' => $r['created_at'], 'self' => (int) $r['id'] === (int) $u['id']];
+        json_out(['users' => $out]);
+    }
+
+    case 'username': {
+        need_post();
+        $u = cms_require_auth(true);
+        $in = cms_input();
+        $pass = isset($in['password']) ? (string) $in['password'] : '';
+        $name = isset($in['username']) ? trim((string) $in['username']) : '';
+        if (!preg_match('/^[A-Za-z0-9_.\-]{3,50}$/', $name)) json_out(['error' => 'bad_username'], 400);
+        cms_check_pass($u['id'], $pass);
+        $st = cms_db()->prepare('SELECT id FROM cms_users WHERE username = ? AND id <> ?');
+        $st->execute([$name, $u['id']]);
+        if ($st->fetch()) json_out(['error' => 'username_taken'], 409);
+        cms_db()->prepare('UPDATE cms_users SET username = ? WHERE id = ?')->execute([$name, $u['id']]);
+        json_out(['ok' => true, 'user' => $name]);
+    }
+
+    case 'user_add': {
+        need_post();
+        $u = cms_require_auth(true);
+        $in = cms_input();
+        $pass = isset($in['password']) ? (string) $in['password'] : '';
+        $name = isset($in['username']) ? trim((string) $in['username']) : '';
+        $new = isset($in['new']) ? (string) $in['new'] : '';
+        if (!preg_match('/^[A-Za-z0-9_.\-]{3,50}$/', $name)) json_out(['error' => 'bad_username'], 400);
+        if (cms_len($new) < 8) json_out(['error' => 'weak_password'], 400);
+        cms_check_pass($u['id'], $pass);
+        $st = cms_db()->prepare('SELECT id FROM cms_users WHERE username = ?');
+        $st->execute([$name]);
+        if ($st->fetch()) json_out(['error' => 'username_taken'], 409);
+        cms_db()->prepare('INSERT INTO cms_users (username, pass_hash) VALUES (?, ?)')->execute([$name, password_hash($new, PASSWORD_DEFAULT)]);
+        json_out(['ok' => true]);
+    }
+
+    case 'user_setpass': {
+        need_post();
+        $u = cms_require_auth(true);
+        $in = cms_input();
+        $pass = isset($in['password']) ? (string) $in['password'] : '';
+        $new = isset($in['new']) ? (string) $in['new'] : '';
+        $id = isset($in['id']) ? (int) $in['id'] : 0;
+        if (cms_len($new) < 8) json_out(['error' => 'weak_password'], 400);
+        cms_check_pass($u['id'], $pass);
+        $st = cms_db()->prepare('UPDATE cms_users SET pass_hash = ? WHERE id = ?');
+        $st->execute([password_hash($new, PASSWORD_DEFAULT), $id]);
+        $chk = cms_db()->prepare('SELECT id FROM cms_users WHERE id = ?');
+        $chk->execute([$id]);
+        if (!$chk->fetch()) json_out(['error' => 'not_found'], 404);
+        json_out(['ok' => true]);
+    }
+
+    case 'user_delete': {
+        need_post();
+        $u = cms_require_auth(true);
+        $in = cms_input();
+        $pass = isset($in['password']) ? (string) $in['password'] : '';
+        $id = isset($in['id']) ? (int) $in['id'] : 0;
+        if ($id === (int) $u['id']) json_out(['error' => 'cannot_delete_self'], 400);
+        cms_check_pass($u['id'], $pass);
+        $st = cms_db()->prepare('DELETE FROM cms_users WHERE id = ?');
+        $st->execute([$id]);
+        if (!$st->rowCount()) json_out(['error' => 'not_found'], 404);
+        json_out(['ok' => true]);
+    }
+
     case 'backup': {
         cms_require_auth(false);
         $data = [

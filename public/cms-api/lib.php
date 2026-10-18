@@ -226,3 +226,11 @@ function cms_store_logo($bytes) {
 
 require __DIR__ . '/patch.php';
 require __DIR__ . '/items.php';
+
+/* confirm the logged-in user's own password before sensitive account actions */
+function cms_check_pass($uid, $pass) {
+    $st = cms_db()->prepare('SELECT pass_hash FROM cms_users WHERE id = ?');
+    $st->execute([$uid]);
+    $row = $st->fetch();
+    if (!$row || !password_verify((string) $pass, $row['pass_hash'])) json_out(['error' => 'bad_old_password'], 400);
+}
