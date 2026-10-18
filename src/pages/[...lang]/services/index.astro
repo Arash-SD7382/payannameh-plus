@@ -10,7 +10,7 @@ const list = await servicesOwn(lang);
 ---
 <Base lang={lang} title={t.nav.services} description={t.servicesDesc} alt={href(other, '/services')}>
 <section><div class="wrap"><h1>{t.nav.services}</h1><p class="muted" style="max-width:60ch">{t.servicesIntro}</p>
-<div class="grid" style="margin-top:2rem">{list.map(s => <ServiceCard s={s} lang={lang} more={true} />)}</div></div></section>
+<div class="grid" style="margin-top:2rem"><!--cms:services-grid-->{list.map(s => <ServiceCard s={s} lang={lang} more={true} />)}<!--/cms:services-grid--></div></div></section>
 <section class="soft"><div class="wrap"><h2>{t.servicesAll}</h2>
 <div class="grid">{groups.map((g, gi) => <div class="svc"><h3 data-cms={`grp.${gi}.t`}>{g[lang]}</h3><ul>{g.items.map((i, ii) => <li data-cms={`grp.${gi}.${ii}`}>{i[lang]}</li>)}</ul></div>)}</div>
 <div class="actions"><a class="btn" href={href(lang, '/contact')}>{t.contactUs}</a></div></div></section>

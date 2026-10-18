@@ -4,7 +4,7 @@ const { lang, soft = false } = Astro.props; const t = ui[lang];
 ---
 <section class={soft ? 'soft' : ''}><div class="wrap" style="max-width:820px">
 <h2 data-cms="faqTitle">{t.faqTitle}</h2><p class="muted" style="margin-top:-.5rem" data-cms="faqSub">{t.faqSub}</p>
-<div class="faq">{t.faq.map(([q, a], i) => <details name="faq"><summary data-cms={`faq.${i}.0`}>{q}</summary><div class="faq-a"><p data-cms={`faq.${i}.1`}>{a}</p></div></details>)}</div>
+<div class="faq" id="faq-list">{t.faq.map(([q, a]) => <details name="faq"><summary>{q}</summary><div class="faq-a"><p>{a}</p></div></details>)}</div><span hidden id="faq-end"></span>
 </div></section>
 <script is:inline>
 var fd=document.querySelectorAll('.faq details');

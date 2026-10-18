@@ -5,6 +5,7 @@ define('CMS_DIR', __DIR__);
 define('CMS_UPLOADS', __DIR__ . '/uploads');
 define('CMS_DATA', __DIR__ . '/data');
 define('CMS_LANGS', ['fa', 'en', 'all']);
+define('CMS_API', true);
 
 function cms_config() {
     static $c = false;
@@ -38,6 +39,7 @@ function cms_db() {
     } catch (Exception $e) {
         json_out(['error' => 'db_connect'], 500);
     }
+    try { $pdo->exec(cms_items_schema()); } catch (Exception $e) { /* older installs get the new table on first use */ }
     return $pdo;
 }
 
@@ -62,6 +64,7 @@ function cms_schema_sql() {
             at DATETIME NOT NULL,
             KEY ip_at (ip, at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
+        cms_items_schema(),
     ];
 }
 
@@ -156,7 +159,11 @@ function cms_snapshot() {
 // (language "all") and are checked strictly, because they end up inside links on the public site.
 // $v === null means "go back to the default" and is always fine for an allowed key.
 function cms_valid_entry($k, $lang, $v) {
-    if ($lang === 'fa' || $lang === 'en') return cms_user_editable_key($k);
+    if ($lang === 'fa' || $lang === 'en') {
+        if (!cms_user_editable_key($k)) return false;
+        if ($k === 'faqlist' && $v !== null && trim((string) $v) !== '') return is_string($v) && cms_faq_valid($v);
+        return true;
+    }
     if ($lang !== 'all' || !is_string($k) || !preg_match('/^team\.[0-9]{1,2}\.(phone|telegram|whatsapp|bale)$/', $k, $m)) return false;
     if ($v === null || trim((string) $v) === '') return true;
     $re = [
@@ -166,6 +173,11 @@ function cms_valid_entry($k, $lang, $v) {
         'bale' => '/^\+?[A-Za-z0-9_]{3,64}$/',
     ];
     return is_string($v) && preg_match($re[$m[1]], $v) === 1;
+}
+
+// Longest value the panel may store for a key (the FAQ list is one JSON value and needs more room).
+function cms_max_len($k) {
+    return $k === 'faqlist' ? 60000 : 5000;
 }
 
 function cms_all_content() {
@@ -211,3 +223,6 @@ function cms_store_logo($bytes) {
     }
     return ['ok' => true, 'url' => '/cms-api/uploads/' . $name];
 }
+
+require __DIR__ . '/patch.php';
+require __DIR__ . '/items.php';

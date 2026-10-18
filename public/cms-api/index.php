@@ -85,7 +85,7 @@ switch ($a) {
                     $del->execute([$k, $lang]);
                 } else {
                     $v = (string) $v;
-                    if (cms_len($v) > 5000) continue;
+                    if (cms_len($v) > cms_max_len($k)) continue;
                     $up->execute([$k, $lang, $v]);
                 }
                 $n++;
@@ -96,7 +96,8 @@ switch ($a) {
             json_out(['error' => 'save_failed'], 500);
         }
         $snap = cms_snapshot();
-        json_out(['ok' => true, 'saved' => $n, 'snapshot' => $snap]);
+        $patch = cms_patch_site();
+        json_out(['ok' => true, 'saved' => $n, 'snapshot' => $snap, 'patch' => $patch]);
     }
 
     case 'logo': {
@@ -137,10 +138,17 @@ switch ($a) {
         cms_require_auth(false);
         $data = [
             'app' => 'payannameh-plus-cms',
-            'version' => 1,
+            'version' => 2,
             'exported_at' => gmdate('c'),
             'content' => cms_all_content(),
+            'items' => cms_db()->query('SELECT type, lang, slug, data, body, deleted FROM cms_items')->fetchAll(),
+            'images' => new stdClass(),
         ];
+        $imgs = [];
+        foreach ((array) glob(CMS_UPLOADS . '/img-*') as $f) {
+            if (is_file($f) && filesize($f) <= 3 * 1024 * 1024) $imgs[basename($f)] = base64_encode(file_get_contents($f));
+        }
+        if ($imgs) $data['images'] = $imgs;
         $st = cms_db()->query("SELECT v FROM cms_content WHERE k = 'site.logo' AND lang = 'all'");
         $logo = $st->fetchColumn();
         if ($logo && strpos($logo, '/cms-api/uploads/') === 0) {
@@ -167,10 +175,20 @@ switch ($a) {
         $db->beginTransaction();
         try {
             $db->exec("DELETE FROM cms_content WHERE lang IN ('fa','en') OR (lang = 'all' AND k LIKE 'team.%')");
+            if (isset($in['items']) && is_array($in['items'])) {
+                $db->exec('DELETE FROM cms_items');
+                $ins = $db->prepare('INSERT INTO cms_items (type, lang, slug, data, body, deleted) VALUES (?, ?, ?, ?, ?, ?)');
+                foreach ($in['items'] as $it) {
+                    if (!is_array($it) || !isset($it['type'], $it['lang'], $it['slug'], $it['data'], $it['body'])) continue;
+                    if (!in_array($it['type'], ['project', 'service'], true) || !in_array($it['lang'], ['fa', 'en'], true)) continue;
+                    if (!preg_match('/^[a-z0-9][a-z0-9\-]{1,78}$/', $it['slug']) || !is_string($it['data']) || !is_string($it['body'])) continue;
+                    $ins->execute([$it['type'], $it['lang'], $it['slug'], $it['data'], $it['body'], empty($it['deleted']) ? 0 : 1]);
+                }
+            }
             foreach (['fa', 'en', 'all'] as $l) {
                 if (empty($in['content'][$l]) || !is_array($in['content'][$l])) continue;
                 foreach ($in['content'][$l] as $k => $v) {
-                    if (!is_string($v) || trim($v) === '' || cms_len($v) > 5000 || !cms_valid_entry($k, $l, $v)) continue;
+                    if (!is_string($v) || trim($v) === '' || cms_len($v) > cms_max_len($k) || !cms_valid_entry($k, $l, $v)) continue;
                     $up->execute([$k, $l, $v]);
                     $n++;
                 }
@@ -180,12 +198,112 @@ switch ($a) {
             $db->rollBack();
             json_out(['error' => 'restore_failed'], 500);
         }
+        if (!empty($in['images']) && is_array($in['images'])) {
+            foreach ($in['images'] as $name => $b64) {
+                if (!is_string($name) || !preg_match('/^img-[a-f0-9]{16}\.(png|jpg|webp)$/', $name) || !is_string($b64)) continue;
+                $bytes = base64_decode($b64, true);
+                if ($bytes === false || strlen($bytes) > 3 * 1024 * 1024 || !cms_image_ext($bytes)) continue;
+                if (!is_dir(CMS_UPLOADS)) @mkdir(CMS_UPLOADS, 0755, true);
+                @file_put_contents(CMS_UPLOADS . '/' . $name, $bytes);
+            }
+        }
         if (!empty($in['logo']['data'])) {
             $bytes = base64_decode($in['logo']['data'], true);
             if ($bytes !== false) cms_store_logo($bytes);
         }
         cms_snapshot();
-        json_out(['ok' => true, 'restored' => $n]);
+        $patch = cms_patch_site();
+        $gen = cms_generate_items();
+        json_out(['ok' => true, 'restored' => $n, 'patch' => $patch, 'items' => $gen]);
+    }
+
+    case 'reapply': {
+        need_post();
+        cms_require_auth(true);
+        json_out(['ok' => true, 'patch' => cms_patch_site(), 'items' => cms_generate_items()]);
+    }
+
+    case 'items': {
+        cms_require_auth(false);
+        $rows = cms_item_rows();
+        $b = cms_baked();
+        $out = ['categories' => $b['categories'], 'project' => ['fa' => cms_effective('project', 'fa', $rows), 'en' => cms_effective('project', 'en', $rows)],
+            'service' => ['fa' => cms_effective('service', 'fa', $rows), 'en' => cms_effective('service', 'en', $rows)], 'removed' => []];
+        foreach ($b['projects'] as $e) if (!empty($rows['project'][$e['lang']][$e['key']]['deleted'])) $out['removed'][] = ['type' => 'project', 'lang' => $e['lang'], 'key' => $e['key'], 'title' => $e['data']['title']];
+        foreach ($b['services'] as $e) if (!empty($rows['service'][$e['lang']][$e['key']]['deleted'])) $out['removed'][] = ['type' => 'service', 'lang' => $e['lang'], 'key' => $e['key'], 'title' => $e['data']['title']];
+        json_out($out);
+    }
+
+    case 'item_save': {
+        need_post();
+        cms_require_auth(true);
+        $in = cms_input();
+        $type = isset($in['type']) ? $in['type'] : '';
+        $lang = isset($in['lang']) ? $in['lang'] : '';
+        $key = isset($in['key']) && is_string($in['key']) ? $in['key'] : '';
+        if (!in_array($type, ['project', 'service'], true) || !in_array($lang, ['fa', 'en'], true)) json_out(['error' => 'bad_item'], 400);
+        if (!preg_match('/^[a-z0-9][a-z0-9\-]{1,78}$/', $key)) json_out(['error' => 'bad_slug'], 400);
+        list($data, $err) = cms_item_clean($type, isset($in['data']) && is_array($in['data']) ? $in['data'] : []);
+        if ($err) json_out(['error' => $err], 400);
+        $body = isset($in['body']) && is_string($in['body']) ? $in['body'] : '';
+        if (cms_len($body) > 100000) json_out(['error' => 'bad_body'], 400);
+        $exists = cms_effective($type, $lang);
+        $isNew = !empty($in['isNew']);
+        $found = false;
+        foreach ($exists as $x) if ($x['key'] === $key) $found = true;
+        if ($isNew && $found) json_out(['error' => 'slug_taken'], 409);
+        if (!$isNew && !$found) json_out(['error' => 'not_found'], 404);
+        $st = cms_db()->prepare('INSERT INTO cms_items (type, lang, slug, data, body, deleted) VALUES (?, ?, ?, ?, ?, 0) ON DUPLICATE KEY UPDATE data = VALUES(data), body = VALUES(body), deleted = 0');
+        $st->execute([$type, $lang, $key, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $body]);
+        $gen = cms_generate_items();
+        json_out(['ok' => true, 'items' => $gen]);
+    }
+
+    case 'item_delete': {
+        need_post();
+        cms_require_auth(true);
+        $in = cms_input();
+        $type = isset($in['type']) ? $in['type'] : ''; $lang = isset($in['lang']) ? $in['lang'] : ''; $key = isset($in['key']) && is_string($in['key']) ? $in['key'] : '';
+        if (!in_array($type, ['project', 'service'], true) || !in_array($lang, ['fa', 'en'], true) || !preg_match('/^[a-z0-9][a-z0-9\-]{1,78}$/', $key)) json_out(['error' => 'bad_item'], 400);
+        $baked = false;
+        foreach (cms_baked()[$type . 's'] as $e) if ($e['lang'] === $lang && $e['key'] === $key) $baked = true;
+        if ($baked) {
+            $st = cms_db()->prepare("INSERT INTO cms_items (type, lang, slug, data, body, deleted) VALUES (?, ?, ?, '{}', '', 1) ON DUPLICATE KEY UPDATE deleted = 1");
+            $st->execute([$type, $lang, $key]);
+        } else {
+            $st = cms_db()->prepare('DELETE FROM cms_items WHERE type = ? AND lang = ? AND slug = ?');
+            $st->execute([$type, $lang, $key]);
+        }
+        json_out(['ok' => true, 'items' => cms_generate_items()]);
+    }
+
+    case 'item_reset': {
+        need_post();
+        cms_require_auth(true);
+        $in = cms_input();
+        $type = isset($in['type']) ? $in['type'] : ''; $lang = isset($in['lang']) ? $in['lang'] : ''; $key = isset($in['key']) && is_string($in['key']) ? $in['key'] : '';
+        if (!in_array($type, ['project', 'service'], true) || !in_array($lang, ['fa', 'en'], true) || !preg_match('/^[a-z0-9][a-z0-9\-]{1,78}$/', $key)) json_out(['error' => 'bad_item'], 400);
+        $st = cms_db()->prepare('DELETE FROM cms_items WHERE type = ? AND lang = ? AND slug = ?');
+        $st->execute([$type, $lang, $key]);
+        json_out(['ok' => true, 'items' => cms_generate_items()]);
+    }
+
+    case 'image': {
+        need_post();
+        cms_require_auth(true);
+        if (empty($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) json_out(['error' => 'no_file'], 400);
+        $r = cms_store_image(file_get_contents($_FILES['file']['tmp_name']));
+        if (isset($r['error'])) json_out($r, 400);
+        json_out($r);
+    }
+
+    case 'preview': {
+        need_post();
+        cms_require_auth(true);
+        $in = cms_input();
+        $md = isset($in['body']) && is_string($in['body']) ? $in['body'] : '';
+        list($html) = cms_md(cms_len($md) > 100000 ? '' : $md);
+        json_out(['html' => $html]);
     }
 
     default:

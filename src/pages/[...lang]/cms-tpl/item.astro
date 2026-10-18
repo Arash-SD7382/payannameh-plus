@@ -1,0 +1,11 @@
+---
+// Empty page shell (header, footer, styles) used by the server (cms-api/items.php) to build
+// project and service pages that the owner adds in the panel. Not for visitors or search engines.
+import Base from '../../../layouts/Base.astro';
+import ContactLinks from '../../../components/ContactLinks.astro';
+import { team } from '../../../data/services';
+import { bothLangs } from '../../../i18n/ui';
+export function getStaticPaths() { return bothLangs(); }
+const { lang } = Astro.props;
+---
+<Base lang={lang} title="@@T@@" description="@@D@@" image="@@IMG@@" alt="@@ALT@@" noindex={true} jsonld={{ '@context': 'https://schema.org', '@type': 'CmsTemplate' }}>@@ARTICLE@@@@TEAM_START@@<div class="people">{team.map((p, i) => <div class="who"><span data-cms={`team.${i}.name`}>{p[lang]}</span><ContactLinks person={p} who={p[lang]} idx={i} /></div>)}</div>@@TEAM_END@@</Base>

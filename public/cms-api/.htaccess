@@ -2,7 +2,7 @@ Options -Indexes
 DirectoryIndex index.php
 
 # These files are only used by PHP itself and must never be opened from a browser.
-<FilesMatch "^(lib\.php|config\.sample\.php|config\.local\.php)$">
+<FilesMatch "^(lib\.php|patch\.php|items\.php|config\.sample\.php|config\.local\.php)$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>

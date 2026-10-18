@@ -70,3 +70,8 @@ html[dir="rtl"] .side button[aria-current="true"]{box-shadow:inset -3px 0 0 var(
   .side button{white-space:nowrap;border:1px solid var(--line)}
   .side hr{display:none}
 }
+.faqed{margin-top:1.5rem}.faqed h3{margin:0 0 .8rem}.faqed .field input{margin-top:.4rem}.faqed .field textarea{margin-top:.5rem}.reset:disabled{display:none}
+.itemrow .row strong{font-weight:600}
+.prose{line-height:1.9}.prose h2{font-size:1.2rem;margin:1.2rem 0 .4rem}.prose img{max-width:100%;border-radius:10px}.prose ul,.prose ol{padding-inline-start:1.4rem}
+select,input[type=date],input[type=number]{width:100%;padding:.6rem .8rem;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+input[type=file]{border:0;padding:.3rem 0}

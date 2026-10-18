@@ -3,7 +3,7 @@ import '../styles/global.css';
 import { team } from '../data/services';
 import ContactLinks from '../components/ContactLinks.astro';
 import { ui, href } from '../i18n/ui';
-const { lang = 'fa', title, description, jsonld, image = '/images/logo.png', alt } = Astro.props;
+const { lang = 'fa', title, description, jsonld, image = '/images/logo.png', alt, noindex = false } = Astro.props;
 const t = ui[lang]; const other = lang === 'fa' ? 'en' : 'fa';
 const full = title === t.brand ? title : `${title} | ${t.brand}`;
 const desc = description || t.metaDesc;
@@ -17,7 +17,7 @@ const switchTo = alt || href(other, '/');
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{full}</title><meta name="description" content={desc}>
-<link rel="canonical" href={canonical}><link rel="icon" href="/images/mark.png">
+{noindex && <meta name="robots" content="noindex">}<link rel="canonical" href={canonical}><link rel="icon" href="/images/mark.png">
 {alt && <link rel="alternate" hreflang={lang} href={canonical}>}
 {alt && <link rel="alternate" hreflang={other} href={new URL(alt, Astro.site)}>}
 <meta property="og:title" content={full}><meta property="og:description" content={desc}>
@@ -32,7 +32,7 @@ const switchTo = alt || href(other, '/');
 <body>
 <header class="site"><div class="wrap">
 <a class="brand" href={href(lang, '/')}><img src="/images/logo.png" alt={t.brand} width="52" height="52" data-cms-logo></a>
-<nav class="main" id="nav" aria-label="Main">{links.map(([n, p]) => <a href={href(lang, p)} aria-current={path.startsWith(p) ? 'page' : undefined}>{n}</a>)}</nav>
+<nav class="main" id="nav" aria-label="Main">{links.map(([n, p]) => <a href={href(lang, p)} aria-current={path.startsWith(p) ? 'page' : undefined} data-cms={`nav.${p.slice(1)}`}>{n}</a>)}</nav>
 <a class="lang" href={switchTo} hreflang={other} lang={other}>{t.switch}</a>
 <label class="theme nt" for="theme"><span class="theme__toggle-wrap"><input id="theme" class="theme__toggle" type="checkbox" role="switch" name="theme" aria-label="Toggle dark mode" autocomplete="off"><span class="theme__icon"><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span></span></span></label>
 <button class="icon-btn hb" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span class="hb-i" aria-hidden="true"><span class="hb-l"></span><span class="hb-l"></span><span class="hb-l"></span></span></button>
@@ -40,8 +40,8 @@ const switchTo = alt || href(other, '/');
 <main><slot /></main>
 <footer class="site"><div class="wrap">
 <div><h2>{t.brand}</h2><p data-cms="tagline">{t.tagline}</p></div>
-<div><h2>{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)}>{n}</a></li>)}</ul></div>
-<div><h2>{t.contact}</h2><ul>{team.map((p, i) => <li><strong data-cms={`team.${i}.name`}>{p[lang]}</strong><br><a href={`tel:${p.phone}`} data-ti={i} data-ck="phone"><bdi dir="ltr" data-ti={i} data-ct="phone">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" idx={i} /></li>)}</ul></div>
+<div><h2 data-cms="explore">{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)} data-cms={`nav.${p.slice(1)}`}>{n}</a></li>)}</ul></div>
+<div><h2 data-cms="contact">{t.contact}</h2><ul>{team.map((p, i) => <li><strong data-cms={`team.${i}.name`}>{p[lang]}</strong><br><a href={`tel:${p.phone}`} data-ti={i} data-ck="phone"><bdi dir="ltr" data-ti={i} data-ct="phone">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" idx={i} /></li>)}</ul></div>
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. <span data-cms="rights">{t.rights}</span></small></div></footer>
 <script is:inline>
 (function(){

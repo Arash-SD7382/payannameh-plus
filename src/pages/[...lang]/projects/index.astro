@@ -30,7 +30,7 @@ const all = await projectsFor(lang);
 <label class="sb-f"><span>{t.sortLabel}</span><select id="sort"><option value="new">{t.newest}</option><option value="old">{t.oldest}</option></select></label>
 </div>
 </div>
-<div class="grid" id="list">{all.map(p => <ProjectCard p={p} lang={lang} />)}</div>
+<div class="grid" id="list"><!--cms:projects-grid-->{all.map(p => <ProjectCard p={p} lang={lang} />)}<!--/cms:projects-grid--></div>
 <div class="empty" id="none" hidden>{t.noMatch}</div></div></section>
 <script is:inline>
 (function(){

@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
+Disallow: /cms-tpl/
+Disallow: /panel/
+Disallow: /cms-api/
 Sitemap: https://payannameh-plus.pages.dev/sitemap-index.xml
