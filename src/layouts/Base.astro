@@ -41,7 +41,7 @@ const switchTo = alt || href(other, '/');
 <footer class="site"><div class="wrap">
 <div><h2>{t.brand}</h2><p data-cms="tagline">{t.tagline}</p></div>
 <div><h2>{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)}>{n}</a></li>)}</ul></div>
-<div><h2>{t.contact}</h2><ul>{team.map(p => <li><strong>{p[lang]}</strong><br><a href={`tel:${p.phone}`}><bdi dir="ltr">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" /></li>)}</ul></div>
+<div><h2>{t.contact}</h2><ul>{team.map((p, i) => <li><strong data-cms={`team.${i}.name`}>{p[lang]}</strong><br><a href={`tel:${p.phone}`} data-ti={i} data-ck="phone"><bdi dir="ltr" data-ti={i} data-ct="phone">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" idx={i} /></li>)}</ul></div>
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. <span data-cms="rights">{t.rights}</span></small></div></footer>
 <script is:inline>
 (function(){

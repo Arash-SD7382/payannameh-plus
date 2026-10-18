@@ -26,12 +26,12 @@ const jsonld = { '@context': 'https://schema.org', '@type': 'Service', name: s.d
 <Base lang={lang} title={s.data.title} description={s.data.excerpt} jsonld={jsonld} image={s.data.image} alt={hasOther ? href(other, `/services/${s.key}`) : href(other, '/services')}>
 <article><section style="padding-bottom:var(--s3)"><div class="wrap article-head">
 <nav class="crumbs" aria-label="Breadcrumb"><a href={href(lang, '/')}>{t.home}</a> / <a href={href(lang, '/services')}>{t.nav.services}</a> / {s.data.title}</nav>
-<h1>{s.data.title}</h1><p class="muted" style="font-size:1.15rem">{s.data.excerpt}</p>
+<h1 data-cms={`svc.${s.key}.title`}>{s.data.title}</h1><p class="muted" style="font-size:1.15rem" data-cms={`svc.${s.key}.excerpt`}>{s.data.excerpt}</p>
 <img class="cover" style="border-radius:var(--r);margin-top:1rem" src={s.data.image} alt={s.data.imageAlt || s.data.title} width="1200" height="675">
 </div></section>
 <section style="padding-top:var(--s3)"><div class="wrap article-head"><div class="prose"><Content /></div>
 <div class="cta"><h2>{t.ctaTitle}</h2><p>{t.ctaText}</p>
-<div class="people">{team.map(p => <div class="who"><span>{p[lang]}</span><ContactLinks person={p} who={p[lang]} /></div>)}</div></div>
+<div class="people">{team.map((p, i) => <div class="who"><span data-cms={`team.${i}.name`}>{p[lang]}</span><ContactLinks person={p} who={p[lang]} idx={i} /></div>)}</div></div>
 </div></section></article>
 {related.length > 0 && <section class="soft"><div class="wrap"><h2>{t.relatedServices}</h2><div class="grid g2">{related.map(r => <ServiceCard s={r} lang={lang} />)}</div></div></section>}
 </Base>

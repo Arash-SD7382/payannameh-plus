@@ -19,6 +19,27 @@
       var v = L[k];
       el.textContent = typeof v === 'string' && v !== '' ? v : el.__orig;
     }
+    // Contact details (shared by both languages). Only values of the expected shape are used.
+    var RE = { phone: /^\+?[0-9]{6,15}$/, telegram: /^[A-Za-z0-9_]{3,64}$/, whatsapp: /^[0-9]{6,15}$/, bale: /^\+?[A-Za-z0-9_]{3,64}$/ };
+    var BASE = { phone: 'tel:', telegram: 'https://t.me/', whatsapp: 'https://wa.me/', bale: 'https://ble.ir/' };
+    function contact(ti, ck) {
+      var v = S['team.' + ti + '.' + ck];
+      return typeof v === 'string' && RE[ck] && RE[ck].test(v) ? v : null;
+    }
+    var links = document.querySelectorAll('a[data-ti][data-ck]');
+    for (var m = 0; m < links.length; m++) {
+      var a = links[m], ck = a.getAttribute('data-ck');
+      if (a.__orig === undefined) a.__orig = a.getAttribute('href');
+      var cv = contact(a.getAttribute('data-ti'), ck);
+      a.setAttribute('href', cv ? BASE[ck] + cv : a.__orig);
+    }
+    var shown = document.querySelectorAll('[data-ti][data-ct]');
+    for (var n = 0; n < shown.length; n++) {
+      var e2 = shown[n], ck2 = e2.getAttribute('data-ct');
+      if (e2.__orig === undefined) e2.__orig = e2.textContent;
+      var cv2 = contact(e2.getAttribute('data-ti'), ck2);
+      e2.textContent = cv2 ? (ck2 === 'telegram' ? '@' + cv2 : cv2) : e2.__orig;
+    }
     var logos = document.querySelectorAll('img[data-cms-logo]');
     for (var j = 0; j < logos.length; j++) {
       var img = logos[j];

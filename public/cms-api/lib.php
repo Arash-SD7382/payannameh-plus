@@ -152,6 +152,22 @@ function cms_snapshot() {
     return true;
 }
 
+// Can this (key, language, value) be stored by the panel? Contact details are shared by both languages
+// (language "all") and are checked strictly, because they end up inside links on the public site.
+// $v === null means "go back to the default" and is always fine for an allowed key.
+function cms_valid_entry($k, $lang, $v) {
+    if ($lang === 'fa' || $lang === 'en') return cms_user_editable_key($k);
+    if ($lang !== 'all' || !is_string($k) || !preg_match('/^team\.[0-9]{1,2}\.(phone|telegram|whatsapp|bale)$/', $k, $m)) return false;
+    if ($v === null || trim((string) $v) === '') return true;
+    $re = [
+        'phone' => '/^\+?[0-9]{6,15}$/',
+        'telegram' => '/^[A-Za-z0-9_]{3,64}$/',
+        'whatsapp' => '/^[0-9]{6,15}$/',
+        'bale' => '/^\+?[A-Za-z0-9_]{3,64}$/',
+    ];
+    return is_string($v) && preg_match($re[$m[1]], $v) === 1;
+}
+
 function cms_all_content() {
     $out = ['fa' => [], 'en' => [], 'all' => []];
     $rows = cms_db()->query('SELECT k, lang, v FROM cms_content')->fetchAll();

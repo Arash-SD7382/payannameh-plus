@@ -119,25 +119,27 @@
     box.appendChild(h('h2', { text: g.title }));
     if (g.hint) box.appendChild(h('p', { class: 'muted', text: g.hint }));
     g.fields.forEach(function (f) {
-      if (schema.defaults[lang][f.key] === undefined) return; // this text does not exist in this language
+      var L = f.shared ? 'all' : lang;
+      if (schema.defaults[L][f.key] === undefined) return; // this text does not exist in this language
       var id = 'f-' + f.key.replace(/\./g, '-');
+      var dir = (f.ltr || lang === 'en') ? 'ltr' : 'rtl';
       var input = f.type === 'textarea'
-        ? h('textarea', { id: id, rows: '3', dir: lang === 'fa' ? 'rtl' : 'ltr' })
-        : h('input', { id: id, type: 'text', dir: lang === 'fa' ? 'rtl' : 'ltr' });
-      input.value = effective(lang, f.key);
+        ? h('textarea', { id: id, rows: '3', dir: dir })
+        : h('input', { id: id, type: 'text', dir: dir });
+      input.value = effective(L, f.key);
       var wrap = h('div', { class: 'field' });
       var tag = h('span', { class: 'tag', text: 'ویرایش‌شده' });
       var reset = h('button', { type: 'button', class: 'reset', text: 'بازگرداندن به متن اصلی' });
       var orig = h('p', { class: 'defaults' });
       function refresh() {
-        var over = isOverridden(lang, f.key);
-        wrap.className = 'field' + (Object.prototype.hasOwnProperty.call(pending, lang + '|' + f.key) ? ' changed' : '');
+        var over = isOverridden(L, f.key);
+        wrap.className = 'field' + (Object.prototype.hasOwnProperty.call(pending, L + '|' + f.key) ? ' changed' : '');
         tag.hidden = !over; reset.disabled = !over; orig.hidden = !over;
-        orig.textContent = over ? 'متن اصلی: ' + def(lang, f.key) : '';
+        orig.textContent = over ? 'مقدار اصلی: ' + def(L, f.key) : '';
         updateBar();
       }
-      input.addEventListener('input', function () { setValue(lang, f.key, input.value); refresh(); });
-      reset.addEventListener('click', function () { setValue(lang, f.key, def(lang, f.key)); input.value = def(lang, f.key); refresh(); });
+      input.addEventListener('input', function () { setValue(L, f.key, input.value); refresh(); });
+      reset.addEventListener('click', function () { setValue(L, f.key, def(L, f.key)); input.value = def(L, f.key); refresh(); });
       wrap.appendChild(h('div', { class: 'row' }, [h('label', { for: id, text: f.label }), tag, reset]));
       wrap.appendChild(input); wrap.appendChild(orig);
       box.appendChild(wrap);
@@ -215,7 +217,7 @@
     var bar = $('langbar');
     bar.hidden = section === 'tools';
     $('lang-note').hidden = section === 'tools';
-    $('lang-note').textContent = lang === 'fa'
+    $('lang-note').textContent = section === 'team' ? 'نام‌ها برای هر زبان جداست. شماره‌ها و آی‌دی‌ها برای هر دو زبان یکی است.' : lang === 'fa'
       ? 'متن‌های نسخه‌ی فارسی سایت. اگر کادر را خالی کنید، متن اصلی برمی‌گردد.'
       : 'متن‌های نسخه‌ی انگلیسی سایت. اگر کادر را خالی کنید، متن اصلی برمی‌گردد.';
     Array.prototype.forEach.call(bar.querySelectorAll('button'), function (b) { b.setAttribute('aria-selected', b.dataset.lang === lang ? 'true' : 'false'); });
@@ -234,6 +236,12 @@
       var p = id.split('|'); return { lang: p[0], k: p[1], v: pending[id] };
     });
     if (!changes.length) return;
+    var RE = { phone: /^\+?[0-9]{6,15}$/, telegram: /^[A-Za-z0-9_]{3,64}$/, whatsapp: /^[0-9]{6,15}$/, bale: /^\+?[A-Za-z0-9_]{3,64}$/ };
+    var NAMES = { phone: 'شماره تلفن', telegram: 'آی‌دی تلگرام', whatsapp: 'شماره واتساپ', bale: 'آی‌دی بله' };
+    for (var i = 0; i < changes.length; i++) {
+      var m = /^team\.\d+\.(phone|telegram|whatsapp|bale)$/.exec(changes[i].k);
+      if (m && changes[i].v !== null && !RE[m[1]].test(changes[i].v)) { toast(NAMES[m[1]] + ' درست نیست. فاصله و علامت اضافه نگذارید.', true); return; }
+    }
     var btn = $('save'); btn.disabled = true;
     req('save', { json: { changes: changes } }).then(function (d) {
       btn.disabled = false;

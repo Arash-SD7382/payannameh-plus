@@ -5,3 +5,4 @@ dist/
 public/cms-api/config.local.php
 public/cms-api/data/
 public/cms-api/uploads/logo-*
+.devkeep/.devkeep/

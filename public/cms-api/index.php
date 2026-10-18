@@ -79,8 +79,8 @@ switch ($a) {
             foreach ($changes as $c) {
                 $k = isset($c['k']) ? $c['k'] : null;
                 $lang = isset($c['lang']) ? $c['lang'] : null;
-                if (!cms_user_editable_key($k) || !in_array($lang, ['fa', 'en'], true)) continue;
                 $v = array_key_exists('v', $c) ? $c['v'] : null;
+                if (!cms_valid_entry($k, $lang, $v)) continue;
                 if ($v === null || trim((string) $v) === '') {
                     $del->execute([$k, $lang]);
                 } else {
@@ -166,11 +166,11 @@ switch ($a) {
         $n = 0;
         $db->beginTransaction();
         try {
-            $db->exec("DELETE FROM cms_content WHERE lang IN ('fa','en')");
-            foreach (['fa', 'en'] as $l) {
+            $db->exec("DELETE FROM cms_content WHERE lang IN ('fa','en') OR (lang = 'all' AND k LIKE 'team.%')");
+            foreach (['fa', 'en', 'all'] as $l) {
                 if (empty($in['content'][$l]) || !is_array($in['content'][$l])) continue;
                 foreach ($in['content'][$l] as $k => $v) {
-                    if (!cms_user_editable_key($k) || !is_string($v) || trim($v) === '' || cms_len($v) > 5000) continue;
+                    if (!is_string($v) || trim($v) === '' || cms_len($v) > 5000 || !cms_valid_entry($k, $l, $v)) continue;
                     $up->execute([$k, $l, $v]);
                     $n++;
                 }
