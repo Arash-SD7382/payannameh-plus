@@ -57,6 +57,9 @@
   } catch (e) {}
 
   if (!window.fetch) return;
+  // The free preview hosts (Cloudflare, Netlify, GitHub Pages) have no panel backend, so asking them
+  // would only log a 404 in the browser console. Skip the request there.
+  if (/\.(workers\.dev|pages\.dev|netlify\.app|github\.io)$/i.test(location.hostname)) return;
   fetch('/cms-api/data/content.json', { cache: 'no-cache', credentials: 'omit' })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) {
