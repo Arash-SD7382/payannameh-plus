@@ -9,7 +9,6 @@ const { lang } = Astro.props; const t = ui[lang]; const other = lang === 'fa' ? 
 <Base lang={lang} title={t.contactUs} description={t.contactDesc} alt={href(other, '/contact')}>
 <section><div class="wrap"><h1 data-cms="contactUs">{t.contactUs}</h1><p class="muted" style="max-width:60ch" data-cms="contactIntro">{t.contactIntro}</p>
 <div class="grid" style="margin-top:2rem">{team.map((p, i) => <div class="svc"><h2 style="font-size:1.3rem" data-cms={`team.${i}.name`}>{p[lang]}</h2>
-<p style="margin:.5rem 0"><strong>{t.phone}:</strong> <a href={`tel:${p.phone}`} data-ti={i} data-ck="phone"><bdi dir="ltr" data-ti={i} data-ct="phone">{p.phone}</bdi></a></p>
-{p.telegram && <p style="margin:.5rem 0 1rem"><strong>{t.telegram}:</strong> <a href={`https://t.me/${p.telegram}`} target="_blank" rel="noopener" data-ti={i} data-ck="telegram"><bdi dir="ltr" data-ti={i} data-ct="telegram">@{p.telegram}</bdi></a></p>}
-<ContactLinks person={p} who={p[lang]} idx={i} /></div>)}</div>
+<p style="margin:.5rem 0 1rem"><a class="tel" href={`tel:${p.phone}`} data-ti={i} data-ck="phone"><bdi dir="ltr" data-ti={i} data-ct="phone">{p.phone}</bdi></a></p>
+<ContactLinks person={p} who={p[lang]} idx={i} noPhone={true} /></div>)}</div>
 </div></section></Base>
