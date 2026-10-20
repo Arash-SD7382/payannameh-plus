@@ -47,7 +47,9 @@ const switchTo = alt || href(other, '/');
 <script is:inline>
 (function(){
 var m=document.getElementById('menu-btn'),n=document.getElementById('nav');
-function setMenu(o){n.classList.toggle('open',o);m.setAttribute('aria-expanded',o)}
+var y0=0;
+function setMenu(o){if(o)y0=window.scrollY;n.classList.toggle('open',o);m.setAttribute('aria-expanded',o)}
+window.addEventListener('scroll',function(){if(n.classList.contains('open')&&Math.abs(window.scrollY-y0)>12)setMenu(false)},{passive:true});
 m.addEventListener('click',function(e){e.stopPropagation();setMenu(!n.classList.contains('open'))});
 document.addEventListener('click',function(e){if(n.classList.contains('open')&&!n.contains(e.target))setMenu(false)});
 document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});
