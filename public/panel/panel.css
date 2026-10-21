@@ -146,3 +146,13 @@ label{display:block;font-weight:600;font-size:.9rem;color:#d1d5db;margin:.9rem 0
   .page-title p{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+
+/* Browsers paint saved/autofilled fields yellow or white. Keep them dark like the other fields. */
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,
+textarea:-webkit-autofill,select:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 1000px #11112b inset!important;box-shadow:0 0 0 1000px #11112b inset!important;
+  -webkit-text-fill-color:var(--text)!important;caret-color:var(--text);
+  border:1px solid var(--accent);transition:background-color 9999s ease-in-out 0s}
+input:autofill,textarea:autofill,select:autofill{
+  box-shadow:0 0 0 1000px #11112b inset!important;color:var(--text)!important;-webkit-text-fill-color:var(--text)!important;
+  background-color:#11112b!important;border:1px solid var(--accent)}
