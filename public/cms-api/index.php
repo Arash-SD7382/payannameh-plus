@@ -209,6 +209,7 @@ switch ($a) {
 
     case 'backup': {
         cms_require_auth(false);
+        cms_mark_set('backup');
         $data = [
             'app' => 'payannameh-plus-cms',
             'version' => 2,
@@ -301,7 +302,55 @@ switch ($a) {
         $t = cms_cron_token(false);
         $sent = isset($_GET['t']) ? (string) $_GET['t'] : '';
         if ($t === '' || !hash_equals($t, $sent)) json_out(['error' => 'forbidden'], 403);
+        cms_mark_set('cron');
         json_out(['ok' => true, 'patch' => cms_patch_site(), 'items' => cms_generate_items()]);
+    }
+
+    case 'dashboard': {
+        cms_require_auth(false);
+        $db = cms_db();
+        $out = ['projects' => [], 'services' => [], 'categories' => [], 'months' => [], 'texts' => [], 'recent' => [], 'recent_items' => []];
+        $rows = cms_item_rows();
+        foreach (['fa', 'en'] as $l) {
+            $out['projects'][$l] = count(cms_effective('project', $l, $rows));
+            $out['services'][$l] = count(cms_effective('service', $l, $rows));
+        }
+        $plist = cms_effective('project', $out['projects']['fa'] ? 'fa' : 'en', $rows);
+        foreach ($plist as $it) {
+            $c = isset($it['data']['category']) ? $it['data']['category'] : '';
+            $out['categories'][$c] = isset($out['categories'][$c]) ? $out['categories'][$c] + 1 : 1;
+        }
+        $m = [];
+        for ($i = 11; $i >= 0; $i--) $m[gmdate('Y-m', strtotime('first day of -' . $i . ' month'))] = 0;
+        foreach ($plist as $it) {
+            $k = substr($it['data']['date'], 0, 7);
+            if (isset($m[$k])) $m[$k]++;
+        }
+        foreach ($m as $k => $n) $out['months'][] = ['m' => $k, 'n' => $n];
+        $st = $db->query("SELECT lang, COUNT(*) c FROM cms_content WHERE k <> 'site.logo' GROUP BY lang");
+        foreach ($st->fetchAll() as $r) $out['texts'][$r['lang']] = (int) $r['c'];
+        $out['users'] = (int) $db->query('SELECT COUNT(*) FROM cms_users')->fetchColumn();
+        $st = $db->query('SELECT k, lang, TIMESTAMPDIFF(SECOND, updated_at, NOW()) AS ago FROM cms_content ORDER BY updated_at DESC LIMIT 8');
+        foreach ($st->fetchAll() as $r) $out['recent'][] = ['k' => $r['k'], 'lang' => $r['lang'], 'ago' => max(0, (int) $r['ago'])];
+        $st = $db->query('SELECT type, lang, slug, data, deleted, TIMESTAMPDIFF(SECOND, updated_at, NOW()) AS ago FROM cms_items ORDER BY updated_at DESC LIMIT 6');
+        foreach ($st->fetchAll() as $r) {
+            $d = json_decode($r['data'], true);
+            $out['recent_items'][] = ['type' => $r['type'], 'lang' => $r['lang'], 'slug' => $r['slug'], 'title' => is_array($d) && isset($d['title']) ? $d['title'] : $r['slug'], 'deleted' => (int) $r['deleted'], 'ago' => max(0, (int) $r['ago'])];
+        }
+        $n = 0; $bytes = 0;
+        foreach ((array) glob(CMS_UPLOADS . '/img-*') as $f) if (is_file($f)) { $n++; $bytes += filesize($f); }
+        $out['uploads'] = ['count' => $n, 'bytes' => $bytes];
+        $out['cron_ago'] = cms_mark_ago('cron');
+        $out['backup_ago'] = cms_mark_ago('backup');
+        $out['env'] = [
+            'php' => PHP_VERSION,
+            'gd' => extension_loaded('gd'), 'mbstring' => extension_loaded('mbstring'), 'fileinfo' => extension_loaded('fileinfo'),
+            'data_writable' => is_dir(CMS_DATA) && is_writable(CMS_DATA),
+            'uploads_writable' => is_dir(CMS_UPLOADS) && is_writable(CMS_UPLOADS),
+            'snapshot' => is_file(CMS_DATA . '/content.json'),
+            'upload_max' => (string) ini_get('upload_max_filesize'),
+        ];
+        json_out($out);
     }
 
     case 'cron_info': {

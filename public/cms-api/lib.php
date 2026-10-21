@@ -275,3 +275,17 @@ function cms_cron_token($create) {
     file_put_contents($f, '<?php exit; ?>' . $t, LOCK_EX);
     return $t;
 }
+
+
+// Small timestamp marks ("when did the cron job / a backup last run") kept as files in the data folder.
+function cms_mark_set($name) {
+    if (!preg_match('/^[a-z-]+$/', $name)) return;
+    if (!is_dir(CMS_DATA)) @mkdir(CMS_DATA, 0755, true);
+    @file_put_contents(CMS_DATA . '/mark-' . $name . '.txt', (string) time(), LOCK_EX);
+}
+function cms_mark_ago($name) {
+    $f = CMS_DATA . '/mark-' . $name . '.txt';
+    if (!preg_match('/^[a-z-]+$/', $name) || !is_file($f)) return null;
+    $v = (int) trim((string) @file_get_contents($f));
+    return $v > 0 ? max(0, time() - $v) : null;
+}

@@ -7,7 +7,7 @@
   var saved = { fa: {}, en: {}, all: {} }; // what the server has
   var pending = {};                        // "lang|key" -> string (new text) or null (back to default)
   var lang = 'fa';
-  var section = 'hero';
+  var section = 'dashboard';
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -68,6 +68,17 @@
     menu: 'M4 6h16M4 12h16M4 18h16',
     close: 'M6 6l12 12M18 6L6 18',
     chevron: 'M6 9l6 6 6-6',
+    home: 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+    plus: 'M12 5v14M5 12h14',
+    back: 'M5 12h14M13 6l6 6-6 6',
+    image: 'M4 5h16v14H4zM4 15l4-4 4 4 3-3 5 5M9 9h.01',
+    shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+    clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2',
+    check: 'M5 12l5 5 9-10',
+    alert: 'M12 4l9 16H3zM12 10v4M12 17h.01',
+    download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+    edit: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
+    help: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01',
     dot: 'M12 12h.01'
   };
   function ico(name, cls) {
@@ -158,6 +169,7 @@
 
   /* ---------- rendering ---------- */
   var NAV = [
+    { title: 'داشبورد', icon: 'home', ids: ['dashboard'], single: true },
     { title: 'صفحه اول', icon: 'layout', ids: ['hero', 'stats', 'intro', 'abilities', 'steps', 'projects'] },
     { title: 'پروژه‌ها و خدمات', icon: 'briefcase', ids: ['items-project', 'items-service', 'svclist'] },
     { title: 'صفحه‌های دیگر', icon: 'file', ids: ['about', 'contact', 'faq'] },
@@ -171,10 +183,34 @@
     if (id === 'items-project') return 'پروژه‌ها (افزودن و ویرایش)';
     if (id === 'items-service') return 'خدمات (افزودن و ویرایش)';
     if (id === 'tools') return 'لوگو، پشتیبان و رمز';
+    if (id === 'dashboard') return 'داشبورد';
     var g = schema.groups.filter(function (x) { return x.id === id; })[0];
     return g ? g.title : id;
   }
-  function go(id) { section = id; editing = null; render(); window.scrollTo(0, 0); menuOpen(false); }
+  var navN = 0;
+  function navPush(extra) {
+    navN++;
+    var st = { n: navN, section: section }; if (extra) for (var k in extra) st[k] = extra[k];
+    try { history.pushState(st, ''); } catch (e) {}
+  }
+  function go(id) {
+    menuOpen(false);
+    if (id === section && !editing) { window.scrollTo(0, 0); return; }
+    section = id; editing = null; navPush(); render(); window.scrollTo(0, 0);
+  }
+  function openEditor(type, ed) { editing = ed; navPush({ ed: 1 }); render(); window.scrollTo(0, 0); }
+  function closeEditor() {
+    if (history.state && history.state.ed) history.back();
+    else { editing = null; render(); }
+  }
+  window.addEventListener('popstate', function (e) {
+    var s = e.state;
+    if (!s || !schema || $('app').hidden) return;
+    navN = s.n || 0; section = s.section || 'dashboard';
+    if (!s.ed) editing = null;
+    render(); window.scrollTo(0, 0);
+  });
+  $('back-btn').addEventListener('click', function () { if (navN > 0) history.back(); });
 
   function renderNav() {
     var nav = $('nav'); nav.textContent = '';
@@ -300,7 +336,7 @@
     var label = type === 'project' ? 'پروژه' : 'خدمت';
     setHeader(type === 'project' ? 'پروژه‌ها' : 'خدمات');
     box.appendChild(h('p', { class: 'muted', text: 'نسخه‌ی ' + (lang === 'fa' ? 'فارسی' : 'انگلیسی') + ' — زبان را از بالا عوض کنید. اگر یک مورد را در هر دو زبان با «آدرس صفحه»ی یکسان بسازید، دکمه‌ی تغییر زبان سایت به همدیگر وصل می‌شود.' }));
-    box.appendChild(h('div', { class: 'actions' }, [h('button', { type: 'button', class: 'btn', text: 'افزودن ' + label + ' جدید', onclick: function () { editing = { isNew: true, type: type, lang: lang }; render(); window.scrollTo(0, 0); } })]));
+    box.appendChild(h('div', { class: 'actions' }, [h('button', { type: 'button', class: 'btn', text: 'افزودن ' + label + ' جدید', onclick: function () { openEditor(type, { isNew: true, type: type, lang: lang }); } })]));
     var list = itemsData[type][lang];
     if (!list.length) box.appendChild(h('p', { class: 'muted', text: 'هنوز موردی برای این زبان وجود ندارد.' }));
     var SRC = { baked: 'اصلی', edited: 'ویرایش‌شده', 'new': 'جدید' };
@@ -310,7 +346,7 @@
         h('div', { class: 'row' }, [
           h('strong', { text: it.data.title, style: 'flex:1;min-width:12rem' }),
           h('span', { class: 'tag', text: SRC[it.src] || '' }),
-          h('button', { type: 'button', class: 'reset', text: 'ویرایش', onclick: function () { editing = { isNew: false, type: type, lang: lang, item: it }; render(); window.scrollTo(0, 0); } }),
+          h('button', { type: 'button', class: 'reset', text: 'ویرایش', onclick: function () { openEditor(type, { isNew: false, type: type, lang: lang, item: it }); } }),
           h('button', { type: 'button', class: 'reset danger', text: 'حذف', onclick: function () {
             if (!confirm('«' + it.data.title + '» حذف شود؟')) return;
             req('item_delete', { json: { type: type, lang: lang, key: it.key } }).then(function (d) {
@@ -526,14 +562,14 @@
           b.disabled = false;
           if (!r4.ok) { toast(errText(r4.error), true); return; }
           toast('ذخیره شد و در سایت اعمال شد.');
-          editing = null; loadItems().then(render); window.scrollTo(0, 0);
+          loadItems().then(closeEditor); window.scrollTo(0, 0);
         });
       } }),
-      h('button', { type: 'button', class: 'ghost', text: 'انصراف', onclick: function () { editing = null; render(); } })
+      h('button', { type: 'button', class: 'ghost', text: 'انصراف', onclick: function () { closeEditor(); } })
     ];
     if (ed.item && ed.item.src === 'edited') acts.push(h('button', { type: 'button', class: 'ghost', text: 'بازگرداندن به نسخه‌ی اصلی', onclick: function () {
       if (!confirm('تغییرات این مورد از بین می‌رود و نسخه‌ی اصلی برمی‌گردد. ادامه می‌دهید؟')) return;
-      req('item_reset', { json: { type: type, lang: ed.lang, key: slug } }).then(function (r5) { if (!r5.ok) { toast(errText(r5.error), true); return; } toast('برگشت.'); editing = null; loadItems().then(render); });
+      req('item_reset', { json: { type: type, lang: ed.lang, key: slug } }).then(function (r5) { if (!r5.ok) { toast(errText(r5.error), true); return; } toast('برگشت.'); loadItems().then(closeEditor); });
     } }));
     box.appendChild(h('div', { class: 'actions', style: 'margin-top:1.4rem' }, acts));
   }
@@ -665,17 +701,208 @@
     loadUsers();
   }
 
+  /* ---------- dashboard ---------- */
+  var DASH_COLORS = ['#ffd700', '#60a5fa', '#4ade80', '#f472b6', '#a78bfa', '#fb923c'];
+  function fnum(n) { return Number(n || 0).toLocaleString('fa-IR'); }
+  function rel(sec) {
+    if (sec == null) return '';
+    if (sec < 60) return 'همین الان';
+    if (sec < 3600) return fnum(Math.floor(sec / 60)) + ' دقیقه پیش';
+    if (sec < 86400) return fnum(Math.floor(sec / 3600)) + ' ساعت پیش';
+    if (sec < 86400 * 30) return fnum(Math.floor(sec / 86400)) + ' روز پیش';
+    return fnum(Math.floor(sec / 86400 / 30)) + ' ماه پیش';
+  }
+  function svg(tag, attrs, kids) {
+    var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    if (attrs) for (var k in attrs) e.setAttribute(k, attrs[k]);
+    (kids || []).forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+  function keyInfo(k) {
+    if (k === 'site.logo') return { label: 'لوگوی سایت', group: 'tools' };
+    var out = null;
+    schema.groups.forEach(function (g) { g.fields.forEach(function (f) { if (f.key === k) out = { label: f.label, group: g.id }; }); });
+    if (!out && k === 'faqlist') out = { label: 'فهرست سؤالات متداول', group: 'faq' };
+    return out || { label: k, group: 'hero' };
+  }
+  function greeting() {
+    var hr = new Date().getHours();
+    return hr < 5 ? 'شب بخیر' : hr < 11 ? 'صبح بخیر' : hr < 16 ? 'روز بخیر' : hr < 19 ? 'عصر بخیر' : 'شب بخیر';
+  }
+
+  function barChart(months) {
+    var W = 600, H = 220, padB = 34, padT = 22, max = 1;
+    months.forEach(function (m) { if (m.n > max) max = m.n; });
+    var step = 4 - 0; var top = Math.max(max, 3);
+    var root = svg('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'chart', role: 'img', 'aria-label': 'نمودار تعداد پروژه در ۱۲ ماه گذشته' });
+    var defs = svg('defs', null, [svg('linearGradient', { id: 'barg', x1: '0', y1: '0', x2: '0', y2: '1' }, [svg('stop', { offset: '0', 'stop-color': '#ffd700' }), svg('stop', { offset: '1', 'stop-color': '#b7791f' })])]);
+    root.appendChild(defs);
+    for (var g = 0; g <= 3; g++) {
+      var y = padT + (H - padT - padB) * g / 3;
+      root.appendChild(svg('line', { x1: 0, x2: W, y1: y, y2: y, stroke: 'rgba(156,163,175,.16)', 'stroke-width': 1 }));
+    }
+    var n = months.length, bw = 26, gap = (W - n * bw) / n;
+    months.forEach(function (m, i) {
+      var x = W - (i + 1) * (bw + gap) + gap / 2;          // newest on the left in RTL
+      var hgt = (H - padT - padB) * (m.n / top);
+      var y0 = H - padB - hgt;
+      if (m.n > 0) {
+        root.appendChild(svg('rect', { x: x, y: y0, width: bw, height: hgt, rx: 6, fill: 'url(#barg)' }));
+        var tn = svg('text', { x: x + bw / 2, y: y0 - 6, 'text-anchor': 'middle', fill: '#ffed4e', 'font-size': 12 }); tn.textContent = fnum(m.n); root.appendChild(tn);
+      } else root.appendChild(svg('rect', { x: x, y: H - padB - 3, width: bw, height: 3, rx: 1.5, fill: 'rgba(156,163,175,.3)' }));
+      var parts = m.m.split('-');
+      var lab = svg('text', { x: x + bw / 2, y: H - 10, 'text-anchor': 'middle', fill: '#9ca3af', 'font-size': 11 });
+      try { lab.textContent = new Date(+parts[0], +parts[1] - 1, 15).toLocaleDateString('fa-IR-u-ca-persian', { month: 'short' }); } catch (e) { lab.textContent = parts[1]; }
+      root.appendChild(lab);
+    });
+    return root;
+  }
+
+  function donut(cats) {
+    var keys = Object.keys(cats), total = 0;
+    keys.forEach(function (k) { total += cats[k]; });
+    var wrap = h('div', { class: 'donut-wrap' });
+    var R = 54, C = 2 * Math.PI * R;
+    var s = svg('svg', { viewBox: '0 0 140 140', class: 'donut', role: 'img', 'aria-label': 'پروژه‌ها بر اساس دسته' });
+    s.appendChild(svg('circle', { cx: 70, cy: 70, r: R, fill: 'none', stroke: 'rgba(156,163,175,.16)', 'stroke-width': 16 }));
+    var off = 0;
+    keys.forEach(function (k, i) {
+      var len = C * cats[k] / total;
+      s.appendChild(svg('circle', { cx: 70, cy: 70, r: R, fill: 'none', stroke: DASH_COLORS[i % DASH_COLORS.length], 'stroke-width': 16,
+        'stroke-dasharray': len + ' ' + (C - len), 'stroke-dashoffset': -off, transform: 'rotate(-90 70 70)' }));
+      off += len;
+    });
+    var tn = svg('text', { x: 70, y: 74, 'text-anchor': 'middle', fill: '#f3f4f6', 'font-size': 26, 'font-weight': 700 }); tn.textContent = fnum(total); s.appendChild(tn);
+    var tl = svg('text', { x: 70, y: 92, 'text-anchor': 'middle', fill: '#9ca3af', 'font-size': 10 }); tl.textContent = 'پروژه'; s.appendChild(tl);
+    wrap.appendChild(s);
+    var leg = h('ul', { class: 'legend' });
+    keys.forEach(function (k, i) {
+      var sw = h('span', { class: 'sw' }); sw.style.background = DASH_COLORS[i % DASH_COLORS.length];
+      leg.appendChild(h('li', null, [sw, h('span', { class: 'lname', text: CATS[k] || k || 'بدون دسته' }), h('b', { text: fnum(cats[k]) }), h('em', { text: '٪' + fnum(Math.round(100 * cats[k] / total)) })]));
+    });
+    wrap.appendChild(leg);
+    return wrap;
+  }
+
+  function statCard(icon, label, value, foot, target) {
+    return h('button', { type: 'button', class: 'card stat-card', onclick: function () { go(target); } }, [
+      h('span', { class: 'stat-icon' }, [ico(icon)]),
+      h('span', { class: 'stat-body' }, [h('small', { text: label }), h('strong', { text: value }), h('em', { text: foot })])
+    ]);
+  }
+
+  function statusRow(level, title, detail) {
+    var icon = h('span', { class: 'st-ico ' + level }, [ico(level === 'ok' ? 'check' : 'alert')]);
+    return h('li', { class: 'st-row' }, [icon, h('span', { class: 'st-text' }, [h('strong', { text: title }), h('small', { text: detail })])]);
+  }
+
+  function renderDashboard() {
+    var box = $('content'); box.textContent = '';
+    setHeader('داشبورد', 'نمای کلی سایت و دسترسی سریع');
+    if (!itemsData) loadItems();
+    var d = new Date(), dateTxt = '';
+    try { dateTxt = d.toLocaleDateString('fa-IR-u-ca-persian', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); } catch (e) {}
+    box.appendChild(h('section', { class: 'dash-hero' }, [
+      h('div', null, [h('small', { class: 'dash-date', text: dateTxt }), h('h2', { text: greeting() + '، ' + me }), h('p', { class: 'muted', text: 'نگاهی سریع به وضعیت سایت پایان‌نامه پلاس' })]),
+      h('div', { class: 'dash-actions' }, [
+        h('button', { type: 'button', class: 'btn btn-primary', onclick: function () { go('items-project'); openEditor('project', { isNew: true, type: 'project', lang: 'fa' }); } }, [ico('plus'), h('span', { text: 'افزودن پروژه' })]),
+        h('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { go('items-service'); openEditor('service', { isNew: true, type: 'service', lang: 'fa' }); } }, [ico('plus'), h('span', { text: 'افزودن خدمت' })]),
+        h('a', { class: 'btn btn-secondary', href: API + '?a=backup', download: '' }, [ico('download'), h('span', { text: 'دانلود پشتیبان' })])
+      ])
+    ]));
+    var body = h('div', { class: 'dash-body' }, [h('p', { class: 'muted', text: 'در حال بارگذاری آمار…' })]);
+    box.appendChild(body);
+
+    req('dashboard').then(function (s) {
+      if (section !== 'dashboard') return;
+      body.textContent = '';
+      if (!s.projects) { body.appendChild(h('p', { class: 'muted', text: errText(s.error) })); return; }
+      var texts = s.texts || {}; var tTotal = (texts.fa || 0) + (texts.en || 0) + (texts.all || 0);
+
+      body.appendChild(h('div', { class: 'stat-grid' }, [
+        statCard('briefcase', 'پروژه‌ها', fnum(s.projects.fa), 'نسخه‌ی انگلیسی: ' + fnum(s.projects.en), 'items-project'),
+        statCard('layout', 'خدمات', fnum(s.services.fa), 'نسخه‌ی انگلیسی: ' + fnum(s.services.en), 'items-service'),
+        statCard('edit', 'متن‌های ویرایش‌شده', fnum(tTotal), 'فارسی ' + fnum(texts.fa || 0) + ' · انگلیسی ' + fnum(texts.en || 0), 'hero'),
+        statCard('users', 'حساب‌های کاربری', fnum(s.users), 'همه دسترسی کامل دارند', 'tools')
+      ]));
+
+      var catKeys = Object.keys(s.categories || {});
+      var chartCard = h('section', { class: 'card' }, [h('div', { class: 'section-head' }, [h('div', null, [h('h3', { text: 'پروژه‌ها در ۱۲ ماه گذشته' }), h('p', { text: 'بر اساس تاریخ هر پروژه' })])])]);
+      chartCard.appendChild(barChart(s.months || []));
+      var catCard = h('section', { class: 'card' }, [h('div', { class: 'section-head' }, [h('div', null, [h('h3', { text: 'پروژه‌ها بر اساس دسته' }), h('p', { text: 'سهم هر دسته از کل پروژه‌ها' })])])]);
+      if (catKeys.length) catCard.appendChild(donut(s.categories)); else catCard.appendChild(h('p', { class: 'muted', text: 'هنوز پروژه‌ای ثبت نشده است.' }));
+      body.appendChild(h('div', { class: 'dash-row wide' }, [chartCard, catCard]));
+
+      // recent changes
+      var events = [];
+      (s.recent || []).forEach(function (r) { var inf = keyInfo(r.k); events.push({ ago: r.ago, icon: 'edit', title: '«' + inf.label + '» ویرایش شد', sub: r.lang === 'fa' ? 'نسخه‌ی فارسی' : r.lang === 'en' ? 'نسخه‌ی انگلیسی' : 'برای هر دو زبان', go: inf.group }); });
+      (s.recent_items || []).forEach(function (r) { var isP = r.type === 'project'; events.push({ ago: r.ago, icon: isP ? 'briefcase' : 'layout', title: (isP ? 'پروژه' : 'خدمت') + ' «' + r.title + '» ' + (r.deleted ? 'حذف شد' : 'ذخیره شد'), sub: r.lang === 'fa' ? 'نسخه‌ی فارسی' : 'نسخه‌ی انگلیسی', go: isP ? 'items-project' : 'items-service' }); });
+      events.sort(function (a, b) { return a.ago - b.ago; });
+      var recentCard = h('section', { class: 'card' }, [h('div', { class: 'section-head' }, [h('div', null, [h('h3', { text: 'آخرین تغییرات' }), h('p', { text: 'کارهایی که اخیراً در پنل انجام شده' })])])]);
+      if (!events.length) recentCard.appendChild(h('p', { class: 'muted', text: 'هنوز تغییری ثبت نشده است. هر متنی را ویرایش کنید تا اینجا دیده شود.' }));
+      else {
+        var ul = h('ul', { class: 'feed' });
+        events.slice(0, 7).forEach(function (ev) {
+          ul.appendChild(h('li', null, [h('button', { type: 'button', class: 'feed-row', onclick: function () { go(ev.go); } }, [
+            h('span', { class: 'feed-ico' }, [ico(ev.icon)]),
+            h('span', { class: 'feed-text' }, [h('strong', { text: ev.title }), h('small', { text: ev.sub })]),
+            h('time', { text: rel(ev.ago) })
+          ])]));
+        });
+        recentCard.appendChild(ul);
+      }
+
+      // system status
+      var env = s.env || {}, rows = [];
+      if (s.cron_ago == null) rows.push(statusRow('warn', 'به‌روزرسانی خودکار (Cron)', 'هنوز اجرا نشده. بعد از خرید هاست در cPanel تنظیم شود.'));
+      else rows.push(statusRow(s.cron_ago < 7200 ? 'ok' : 'warn', 'به‌روزرسانی خودکار (Cron)', 'آخرین اجرا: ' + rel(s.cron_ago)));
+      if (s.backup_ago == null) rows.push(statusRow('warn', 'فایل پشتیبان', 'هنوز فایل پشتیبان گرفته نشده است.'));
+      else rows.push(statusRow(s.backup_ago > 86400 * 30 ? 'warn' : 'ok', 'فایل پشتیبان', 'آخرین پشتیبان: ' + rel(s.backup_ago)));
+      rows.push(statusRow(env.snapshot ? 'ok' : 'warn', 'فایل نمایش عمومی', env.snapshot ? 'ساخته شده و سایت از آن می‌خواند.' : 'هنوز ساخته نشده. یک بار ذخیره بزنید.'));
+      rows.push(statusRow(env.data_writable && env.uploads_writable ? 'ok' : 'warn', 'دسترسی نوشتن روی هاست', env.data_writable && env.uploads_writable ? 'پوشه‌ی داده و تصاویر قابل نوشتن است.' : 'دسترسی نوشتن پوشه‌ی cms-api/data یا uploads را بررسی کنید.'));
+      var miss = ['gd', 'mbstring', 'fileinfo'].filter(function (x) { return !env[x]; });
+      rows.push(statusRow(miss.length ? 'warn' : 'ok', 'نسخه‌ی PHP و افزونه‌ها', 'PHP ' + env.php + (miss.length ? ' · نصب نیست: ' + miss.join('، ') : ' · افزونه‌ها کامل است')));
+      var mb = (s.uploads.bytes / 1048576);
+      rows.push(statusRow('ok', 'تصاویر آپلودشده', fnum(s.uploads.count) + ' تصویر · ' + mb.toLocaleString('fa-IR', { maximumFractionDigits: 1 }) + ' مگابایت'));
+      var statCardEl = h('section', { class: 'card' }, [h('div', { class: 'section-head' }, [h('div', null, [h('h3', { text: 'وضعیت سیستم' }), h('p', { text: 'بررسی خودکار سلامت پنل و هاست' })])]), h('ul', { class: 'status' }, rows)]);
+      body.appendChild(h('div', { class: 'dash-row' }, [recentCard, statCardEl]));
+
+      // quick access
+      var Q = [
+        ['layout', 'صفحه اول', 'متن‌ها، اعداد و کارت‌های صفحه‌ی اول', 'hero'],
+        ['briefcase', 'پروژه‌ها', 'افزودن و ویرایش پروژه‌ها', 'items-project'],
+        ['layout', 'خدمات', 'افزودن و ویرایش خدمات', 'items-service'],
+        ['users', 'اطلاعات تماس', 'شماره‌ها و آی‌دی‌های تیم', 'team'],
+        ['help', 'سؤالات متداول', 'افزودن، حذف و جابه‌جایی سؤال‌ها', 'faq'],
+        ['globe', 'گوگل و سئو', 'عنوان و توضیح صفحه‌ها در گوگل', 'meta'],
+        ['image', 'لوگوی سایت', 'عوض کردن لوگو در همه‌ی صفحه‌ها', 'tools'],
+        ['shield', 'پشتیبان و حساب‌ها', 'فایل پشتیبان، رمز و حساب‌های کاربری', 'tools']
+      ];
+      var qc = h('section', { class: 'card' }, [h('div', { class: 'section-head' }, [h('div', null, [h('h3', { text: 'دسترسی سریع' }), h('p', { text: 'مهم‌ترین بخش‌های پنل' })])])]);
+      var qg = h('div', { class: 'quick-grid' });
+      Q.forEach(function (q) {
+        qg.appendChild(h('button', { type: 'button', class: 'quick', onclick: function () { go(q[3]); } }, [
+          h('span', { class: 'stat-icon' }, [ico(q[0])]), h('span', { class: 'q-text' }, [h('strong', { text: q[1] }), h('small', { text: q[2] })])]));
+      });
+      qc.appendChild(qg);
+      body.appendChild(qc);
+    });
+  }
+
   function render() {
     renderNav();
     var bar = $('langbar');
     var isItems = section.indexOf('items-') === 0;
-    bar.hidden = section === 'tools' || (isItems && !!editing);
-    $('lang-note').hidden = section === 'tools' || isItems;
+    var isDash = section === 'dashboard';
+    bar.hidden = isDash || section === 'tools' || (isItems && !!editing);
+    $('lang-note').hidden = isDash || section === 'tools' || isItems;
+    $('back-btn').hidden = navN === 0;
     $('lang-note').textContent = section === 'team' ? 'نام‌ها برای هر زبان جداست. شماره‌ها و آی‌دی‌ها برای هر دو زبان یکی است.' : lang === 'fa'
       ? 'متن‌های نسخه‌ی فارسی سایت. اگر کادر را خالی کنید، متن اصلی برمی‌گردد.'
       : 'متن‌های نسخه‌ی انگلیسی سایت. اگر کادر را خالی کنید، متن اصلی برمی‌گردد.';
     Array.prototype.forEach.call(bar.querySelectorAll('button'), function (b) { b.setAttribute('aria-selected', b.dataset.lang === lang ? 'true' : 'false'); });
-    if (section === 'tools') renderTools();
+    if (isDash) renderDashboard();
+    else if (section === 'tools') renderTools();
     else if (isItems) renderItems(section.slice(6));
     else renderFields(schema.groups.filter(function (g) { return g.id === section; })[0] || schema.groups[0]);
     updateBar();
@@ -730,6 +957,7 @@
       return loadContent();
     }).then(function () {
       $('login').hidden = true; $('app').hidden = false;
+      navN = 0; section = 'dashboard'; try { history.replaceState({ n: 0, section: 'dashboard' }, ''); } catch (e) {}
       $('me-name').textContent = me; $('me-avatar').textContent = (me || '?').charAt(0);
       render();
       req('reapply', { json: {} }); // makes sure the saved titles and FAQ are in the page files, even after a fresh upload of the site
