@@ -58,6 +58,41 @@
     return e;
   }
 
+  var ICON = {
+    layout: 'M3 4h18v6H3zM3 14h8v6H3zM15 14h6v6h-6z',
+    briefcase: 'M3 7h18v13H3zM8 7V4h8v3M3 13h18',
+    file: 'M6 3h9l4 4v14H6zM14 3v5h5M9 13h6M9 17h6',
+    users: 'M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM21 20v-2a4 4 0 0 0-3-3.9M16 3.1a3.5 3.5 0 0 1 0 6.8',
+    globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',
+    settings: 'M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4',
+    menu: 'M4 6h16M4 12h16M4 18h16',
+    close: 'M6 6l12 12M18 6L6 18',
+    chevron: 'M6 9l6 6 6-6',
+    dot: 'M12 12h.01'
+  };
+  function ico(name, cls) {
+    var ns = 'http://www.w3.org/2000/svg';
+    var s = document.createElementNS(ns, 'svg');
+    s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', 'ico' + (cls ? ' ' + cls : '')); s.setAttribute('aria-hidden', 'true');
+    var pth = document.createElementNS(ns, 'path'); pth.setAttribute('d', ICON[name] || ICON.dot); s.appendChild(pth);
+    return s;
+  }
+  function setHeader(title, sub) {
+    $('page-title').textContent = title;
+    $('page-sub').textContent = sub || '';
+    document.title = title + ' | پنل مدیریت';
+  }
+  function menuOpen(o) {
+    document.body.classList.toggle('menu-open', o);
+    var b = $('menu-btn'); b.setAttribute('aria-expanded', o ? 'true' : 'false');
+    b.textContent = ''; b.appendChild(ico(o ? 'close' : 'menu'));
+  }
+  $('menu-btn').addEventListener('click', function () { menuOpen(!document.body.classList.contains('menu-open')); });
+  $('overlay').addEventListener('click', function () { menuOpen(false); });
+  $('menu-close').addEventListener('click', function () { menuOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menuOpen(false); });
+  menuOpen(false);
+
   function toast(msg, bad) {
     var t = $('toast');
     t.textContent = msg; t.className = 'toast' + (bad ? ' err' : ''); t.hidden = false;
@@ -122,25 +157,60 @@
   window.addEventListener('beforeunload', function (e) { if (count()) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- rendering ---------- */
+  var NAV = [
+    { title: 'صفحه اول', icon: 'layout', ids: ['hero', 'stats', 'intro', 'abilities', 'steps', 'projects'] },
+    { title: 'پروژه‌ها و خدمات', icon: 'briefcase', ids: ['items-project', 'items-service', 'svclist'] },
+    { title: 'صفحه‌های دیگر', icon: 'file', ids: ['about', 'contact', 'faq'] },
+    { title: 'اطلاعات تماس تیم', icon: 'users', ids: ['team'], single: true },
+    { title: 'منو، فوتر و گوگل', icon: 'globe', ids: ['nav', 'footer', 'meta'] },
+    { sep: true },
+    { title: 'لوگو، پشتیبان و رمز', icon: 'settings', ids: ['tools'], single: true }
+  ];
+  var openGroups = {};
+  function sectionTitle(id) {
+    if (id === 'items-project') return 'پروژه‌ها (افزودن و ویرایش)';
+    if (id === 'items-service') return 'خدمات (افزودن و ویرایش)';
+    if (id === 'tools') return 'لوگو، پشتیبان و رمز';
+    var g = schema.groups.filter(function (x) { return x.id === id; })[0];
+    return g ? g.title : id;
+  }
+  function go(id) { section = id; editing = null; render(); window.scrollTo(0, 0); menuOpen(false); }
+
   function renderNav() {
     var nav = $('nav'); nav.textContent = '';
-    schema.groups.forEach(function (g) {
-      nav.appendChild(h('button', { type: 'button', text: g.title, 'aria-current': section === g.id ? 'true' : 'false',
-        onclick: function () { section = g.id; render(); window.scrollTo(0, 0); } }));
+    var used = {};
+    NAV.forEach(function (n) { (n.ids || []).forEach(function (i) { used[i] = true; }); });
+    var extra = schema.groups.filter(function (g) { return !used[g.id]; }).map(function (g) { return g.id; });
+    var list = NAV.slice();
+    if (extra.length) list.splice(list.length - 2, 0, { title: 'سایر', icon: 'file', ids: extra });
+    list.forEach(function (n, idx) {
+      if (n.sep) { nav.appendChild(h('hr', { class: 'nav-sep' })); return; }
+      if (n.single) {
+        var id = n.ids[0];
+        var b = h('button', { type: 'button', class: 'nav-link', 'aria-current': section === id ? 'true' : 'false', onclick: function () { go(id); } });
+        b.appendChild(ico(n.icon)); b.appendChild(h('span', { text: n.title }));
+        nav.appendChild(b); return;
+      }
+      var hasActive = n.ids.indexOf(section) !== -1;
+      if (hasActive) openGroups[idx] = true;
+      var open = !!openGroups[idx];
+      var grp = h('div', { class: 'nav-group' + (open ? ' open' : '') });
+      var tog = h('button', { type: 'button', class: 'nav-group-toggle', 'aria-expanded': open ? 'true' : 'false', onclick: function () {
+        openGroups[idx] = !openGroups[idx]; grp.classList.toggle('open', !!openGroups[idx]); tog.setAttribute('aria-expanded', openGroups[idx] ? 'true' : 'false');
+      } });
+      tog.appendChild(ico(n.icon)); tog.appendChild(h('span', { text: n.title })); tog.appendChild(ico('chevron', 'chevron'));
+      var inner = h('div');
+      n.ids.forEach(function (id) {
+        inner.appendChild(h('button', { type: 'button', class: 'nav-link', text: sectionTitle(id), 'aria-current': section === id ? 'true' : 'false', onclick: function () { go(id); } }));
+      });
+      grp.appendChild(tog); grp.appendChild(h('div', { class: 'nav-submenu' }, [inner]));
+      nav.appendChild(grp);
     });
-    nav.insertBefore(h('hr'), nav.firstChild);
-    [['items-service', 'خدمات (افزودن و ویرایش)'], ['items-project', 'پروژه‌ها (افزودن و ویرایش)']].forEach(function (x) {
-      nav.insertBefore(h('button', { type: 'button', text: x[1], 'aria-current': section === x[0] ? 'true' : 'false',
-        onclick: function () { section = x[0]; editing = null; render(); window.scrollTo(0, 0); } }), nav.firstChild);
-    });
-    nav.appendChild(h('hr'));
-    nav.appendChild(h('button', { type: 'button', text: 'لوگو، پشتیبان و رمز', 'aria-current': section === 'tools' ? 'true' : 'false',
-      onclick: function () { section = 'tools'; render(); window.scrollTo(0, 0); } }));
   }
 
   function renderFields(g) {
     var box = $('content'); box.textContent = '';
-    box.appendChild(h('h2', { text: g.title }));
+    setHeader(g.title);
     if (g.hint) box.appendChild(h('p', { class: 'muted', text: g.hint }));
     g.fields.forEach(function (f) {
       var L = f.shared ? 'all' : lang;
@@ -200,7 +270,7 @@
             h('strong', { text: 'سؤال ' + (i + 1) }),
             h('button', { type: 'button', class: 'reset', text: 'بالا', disabled: i === 0, onclick: function () { move(-1); } }),
             h('button', { type: 'button', class: 'reset', text: 'پایین', disabled: i === arr.length - 1, onclick: function () { move(1); } }),
-            h('button', { type: 'button', class: 'reset', text: 'حذف', onclick: function () {
+            h('button', { type: 'button', class: 'reset danger', text: 'حذف', onclick: function () {
               if (!confirm('این سؤال حذف شود؟')) return; arr.splice(i, 1); commit(); draw(); } })
           ]),
           q, a
@@ -228,7 +298,7 @@
     if (!itemsData) { box.appendChild(h('p', { class: 'muted', text: 'در حال بارگذاری…' })); loadItems().then(function (d) { if (!d.project) toast(errText(d.error), true); else render(); }); return; }
     if (editing) { renderItemEditor(type, editing); return; }
     var label = type === 'project' ? 'پروژه' : 'خدمت';
-    box.appendChild(h('h2', { text: type === 'project' ? 'پروژه‌ها' : 'خدمات' }));
+    setHeader(type === 'project' ? 'پروژه‌ها' : 'خدمات');
     box.appendChild(h('p', { class: 'muted', text: 'نسخه‌ی ' + (lang === 'fa' ? 'فارسی' : 'انگلیسی') + ' — زبان را از بالا عوض کنید. اگر یک مورد را در هر دو زبان با «آدرس صفحه»ی یکسان بسازید، دکمه‌ی تغییر زبان سایت به همدیگر وصل می‌شود.' }));
     box.appendChild(h('div', { class: 'actions' }, [h('button', { type: 'button', class: 'btn', text: 'افزودن ' + label + ' جدید', onclick: function () { editing = { isNew: true, type: type, lang: lang }; render(); window.scrollTo(0, 0); } })]));
     var list = itemsData[type][lang];
@@ -241,7 +311,7 @@
           h('strong', { text: it.data.title, style: 'flex:1;min-width:12rem' }),
           h('span', { class: 'tag', text: SRC[it.src] || '' }),
           h('button', { type: 'button', class: 'reset', text: 'ویرایش', onclick: function () { editing = { isNew: false, type: type, lang: lang, item: it }; render(); window.scrollTo(0, 0); } }),
-          h('button', { type: 'button', class: 'reset', text: 'حذف', onclick: function () {
+          h('button', { type: 'button', class: 'reset danger', text: 'حذف', onclick: function () {
             if (!confirm('«' + it.data.title + '» حذف شود؟')) return;
             req('item_delete', { json: { type: type, lang: lang, key: it.key } }).then(function (d) {
               if (!d.ok) { toast(errText(d.error), true); return; }
@@ -344,7 +414,7 @@
     var it = ed.item || { key: '', data: isP ? { title: '', date: new Date().toISOString().slice(0, 10), category: 'Writing', excerpt: '', cover: '', coverAlt: '', video: '', featured: false } : { title: '', order: 100, excerpt: '', image: '', imageAlt: '' }, body: '' };
     var d = JSON.parse(JSON.stringify(it.data));
     var rtl = ed.lang === 'fa' ? 'rtl' : 'ltr';
-    box.appendChild(h('h2', { text: (ed.isNew ? 'افزودن ' : 'ویرایش ') + (isP ? 'پروژه' : 'خدمت') + ' (' + (ed.lang === 'fa' ? 'فارسی' : 'انگلیسی') + ')' }));
+    setHeader((ed.isNew ? 'افزودن ' : 'ویرایش ') + (isP ? 'پروژه' : 'خدمت') + ' (' + (ed.lang === 'fa' ? 'فارسی' : 'انگلیسی') + ')');
     function txt(label, val, onInput, area, dirx) {
       var el = area ? h('textarea', { rows: String(area), dir: dirx || rtl }) : h('input', { type: 'text', dir: dirx || rtl });
       el.value = val; el.addEventListener('input', function () { onInput(el.value); });
@@ -470,7 +540,7 @@
 
   function renderTools() {
     var box = $('content'); box.textContent = '';
-    box.appendChild(h('h2', { text: 'لوگو، پشتیبان و رمز' }));
+    setHeader('لوگو، پشتیبان و رمز', 'لوگو، فایل پشتیبان، حساب‌ها و به‌روزرسانی خودکار');
 
     // logo
     var logoUrl = saved.all['site.logo'] || '/images/logo.png';
@@ -540,7 +610,7 @@
       h('label', { text: 'رمز فعلی خودتان' }), unp,
       h('div', { class: 'actions' }, [h('button', { type: 'button', class: 'btn', text: 'تغییر نام کاربری', onclick: function () {
         req('username', { json: { username: un.value, password: unp.value } }).then(function (d) {
-          if (d.ok) { me = d.user; unp.value = ''; un.value = ''; toast('نام کاربری عوض شد.'); renderTools(); } else toast(errText(d.error), true);
+          if (d.ok) { me = d.user; $('me-name').textContent = me; $('me-avatar').textContent = (me || '?').charAt(0); unp.value = ''; un.value = ''; toast('نام کاربری عوض شد.'); renderTools(); } else toast(errText(d.error), true);
         });
       } })])
     ]);
@@ -561,7 +631,7 @@
               if (d.ok) { np.value = ''; toast('رمز ' + x.username + ' عوض شد.'); } else toast(errText(d.error), true);
             });
           } })];
-        if (!x.self) kids.push(h('button', { type: 'button', class: 'reset', text: 'حذف حساب', onclick: function () {
+        if (!x.self) kids.push(h('button', { type: 'button', class: 'reset danger', text: 'حذف حساب', onclick: function () {
           if (!confirm('حساب «' + x.username + '» حذف شود؟')) return;
           req('user_delete', { json: { id: x.id, password: gp.value } }).then(function (d) {
             if (d.ok) { toast('حساب حذف شد.'); loadUsers(); } else toast(errText(d.error), true);
@@ -660,6 +730,7 @@
       return loadContent();
     }).then(function () {
       $('login').hidden = true; $('app').hidden = false;
+      $('me-name').textContent = me; $('me-avatar').textContent = (me || '?').charAt(0);
       render();
       req('reapply', { json: {} }); // makes sure the saved titles and FAQ are in the page files, even after a fresh upload of the site
     }).catch(function () { toast(errText('network'), true); });

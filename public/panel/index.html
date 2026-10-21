@@ -7,6 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>پنل مدیریت</title>
 <link rel="icon" href="/images/mark.png">
+<meta name="theme-color" content="#0f0f23">
 <link rel="stylesheet" href="/panel/panel.css">
 </head>
 <body>
@@ -26,17 +27,32 @@
 </section>
 
 <div id="app" hidden>
-  <header class="top">
-    <strong>پنل مدیریت</strong>
-    <span class="grow"></span>
-    <a class="link" href="/" target="_blank" rel="noopener">مشاهده سایت</a>
-    <button id="logout" class="ghost" type="button">خروج</button>
-  </header>
+  <div id="overlay" class="sidebar-overlay"></div>
+  <aside id="sidebar" class="app-sidebar" aria-label="منوی پنل">
+    <div class="brand">
+      <span class="brand-mark"><img src="/images/mark.png" alt="" width="36" height="36"></span>
+      <div><strong>پنل مدیریت</strong><small>پایان‌نامه پلاس</small></div>
+      <button id="menu-close" class="menu-close" type="button" aria-label="بستن منو">×</button>
+    </div>
+    <nav id="nav" class="sidebar-nav" aria-label="بخش‌ها"></nav>
+    <div class="sidebar-profile">
+      <span class="avatar" id="me-avatar" aria-hidden="true"></span>
+      <div><strong id="me-name"></strong><small>مدیر سایت</small></div>
+      <span class="profile-status" title="متصل"></span>
+    </div>
+  </aside>
 
-  <div class="layout">
-    <nav id="nav" class="side" aria-label="بخش‌ها"></nav>
+  <div class="app-main">
+    <header class="app-header">
+      <button id="menu-btn" class="menu-button" type="button" aria-label="باز و بسته کردن منو" aria-expanded="false" aria-controls="sidebar"></button>
+      <div class="page-title"><h1 id="page-title">پنل مدیریت</h1><p id="page-sub"></p></div>
+      <div class="header-actions">
+        <a class="btn btn-secondary btn-sm" href="/" target="_blank" rel="noopener" id="view-site">مشاهده سایت</a>
+        <button id="logout" class="btn btn-secondary btn-sm" type="button">خروج</button>
+      </div>
+    </header>
 
-    <main class="main">
+    <main class="page-content">
       <div id="langbar" class="langbar" role="tablist" aria-label="زبان">
         <button type="button" role="tab" data-lang="fa" aria-selected="true">فارسی</button>
         <button type="button" role="tab" data-lang="en" aria-selected="false">English</button>
@@ -48,8 +64,8 @@
 
   <div id="savebar" class="savebar" hidden>
     <span id="savecount"></span>
-    <button id="discard" class="ghost" type="button">لغو تغییرات</button>
-    <button id="save" class="btn" type="button">ذخیره</button>
+    <button id="discard" class="btn btn-secondary" type="button">لغو تغییرات</button>
+    <button id="save" class="btn btn-primary" type="button">ذخیره</button>
   </div>
 </div>
 
