@@ -39,8 +39,34 @@ function cms_db() {
     } catch (Exception $e) {
         json_out(['error' => 'db_connect'], 500);
     }
-    try { $pdo->exec(cms_items_schema()); } catch (Exception $e) { /* older installs get the new table on first use */ }
+    try { $pdo->exec(cms_items_schema()); $pdo->exec(cms_hits_schema()); } catch (Exception $e) { /* older installs get the new tables on first use */ }
     return $pdo;
+}
+
+function cms_hits_schema() {
+    return 'CREATE TABLE IF NOT EXISTS cms_hits (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        ip VARCHAR(45) NOT NULL,
+        at DATETIME NOT NULL,
+        KEY ip_at (ip, at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
+}
+
+// Request-rate limit per IP for the whole API: at most $max requests in $secs seconds.
+// Stops scripts that hammer the login, the cron address or any other action.
+function cms_rate_limit($max = 40, $secs = 10) {
+    $ip = isset($_SERVER['REMOTE_ADDR']) ? substr($_SERVER['REMOTE_ADDR'], 0, 45) : '0';
+    try {
+        $db = cms_db();
+        if (random_int(1, 50) === 1) $db->exec('DELETE FROM cms_hits WHERE at < (NOW() - INTERVAL 1 HOUR)');
+        $st = $db->prepare('SELECT COUNT(*) FROM cms_hits WHERE ip = ? AND at > (NOW() - INTERVAL ' . (int) $secs . ' SECOND)');
+        $st->execute([$ip]);
+        if ((int) $st->fetchColumn() >= $max) {
+            header('Retry-After: ' . (int) $secs);
+            json_out(['error' => 'rate_limited'], 429);
+        }
+        $db->prepare('INSERT INTO cms_hits (ip, at) VALUES (?, NOW())')->execute([$ip]);
+    } catch (PDOException $e) { /* never block the panel because of the counter itself */ }
 }
 
 function cms_schema_sql() {
@@ -65,6 +91,7 @@ function cms_schema_sql() {
             KEY ip_at (ip, at)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
         cms_items_schema(),
+        cms_hits_schema(),
     ];
 }
 

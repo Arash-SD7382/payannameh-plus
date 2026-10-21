@@ -6,6 +6,8 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: same-origin');
 
+cms_rate_limit();
+
 $a = isset($_GET['a']) ? $_GET['a'] : '';
 $method = $_SERVER['REQUEST_METHOD'];
 
