@@ -80,6 +80,8 @@
     download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
     edit: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
     help: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01',
+    search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.3-4.3',
+    trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
     dot: 'M12 12h.01'
   };
   function ico(name, cls) {
@@ -163,7 +165,7 @@
 
   function updateBar() {
     var n = count();
-    $('savebar').hidden = n === 0;
+    $('savebar').hidden = n === 0 || !!editing;
     $('savecount').textContent = n + ' تغییر ذخیره‌نشده';
   }
   window.addEventListener('beforeunload', function (e) { if (count()) { e.preventDefault(); e.returnValue = ''; } });
@@ -337,28 +339,55 @@
     var label = type === 'project' ? 'پروژه' : 'خدمت';
     setHeader(type === 'project' ? 'پروژه‌ها' : 'خدمات');
     box.appendChild(h('p', { class: 'muted', text: 'نسخه‌ی ' + (lang === 'fa' ? 'فارسی' : 'انگلیسی') + ' — زبان را از بالا عوض کنید. اگر یک مورد را در هر دو زبان با «آدرس صفحه»ی یکسان بسازید، دکمه‌ی تغییر زبان سایت به همدیگر وصل می‌شود.' }));
-    box.appendChild(h('div', { class: 'actions' }, [h('button', { type: 'button', class: 'btn', text: 'افزودن ' + label + ' جدید', onclick: function () { openEditor(type, { isNew: true, type: type, lang: lang }); } })]));
     var list = itemsData[type][lang];
-    if (!list.length) box.appendChild(h('p', { class: 'muted', text: 'هنوز موردی برای این زبان وجود ندارد.' }));
     var SRC = { baked: 'اصلی', edited: 'ویرایش‌شده', 'new': 'جدید' };
-    list.forEach(function (it) {
-      var sub = type === 'project' ? (it.data.date + ' · ' + (CATS[it.data.category] || it.data.category)) : ('ترتیب ' + it.data.order);
-      box.appendChild(h('div', { class: 'field itemrow' }, [
-        h('div', { class: 'row' }, [
-          h('strong', { text: it.data.title, style: 'flex:1;min-width:12rem' }),
-          h('span', { class: 'tag', text: SRC[it.src] || '' }),
-          h('button', { type: 'button', class: 'reset', text: 'ویرایش', onclick: function () { openEditor(type, { isNew: false, type: type, lang: lang, item: it }); } }),
-          h('button', { type: 'button', class: 'reset danger', text: 'حذف', onclick: function () {
+    var isP = type === 'project';
+    var q = h('input', { type: 'search', placeholder: 'جست‌وجو در عنوان‌ها…', 'aria-label': 'جست‌وجو', class: 'tb-search' });
+    var count = h('span', { class: 'muted', style: 'margin:0' });
+    box.appendChild(h('div', { class: 'toolbar' }, [
+      h('div', { class: 'tb-find' }, [ico('search'), q]),
+      count,
+      h('button', { type: 'button', class: 'btn btn-primary', onclick: function () { openEditor(type, { isNew: true, type: type, lang: lang }); } }, [ico('plus'), h('span', { text: 'افزودن ' + label + ' جدید' })])
+    ]));
+    var card = h('section', { class: 'card table-card' });
+    box.appendChild(card);
+    function drawRows() {
+      card.textContent = '';
+      var term = q.value.trim().toLowerCase();
+      var rows = list.filter(function (it) { return !term || (it.data.title + ' ' + it.key).toLowerCase().indexOf(term) !== -1; });
+      count.textContent = fnum(rows.length) + (term ? ' از ' + fnum(list.length) : '') + ' ' + label;
+      if (!list.length) { card.appendChild(h('p', { class: 'muted', text: 'هنوز موردی برای این زبان وجود ندارد.' })); return; }
+      var head = isP ? ['عنوان', 'دسته', 'تاریخ', 'وضعیت', 'عملیات'] : ['عنوان', 'ترتیب', 'وضعیت', 'عملیات'];
+      var table = h('table', { class: 'data-table' });
+      table.appendChild(h('thead', null, [h('tr', null, head.map(function (x) { return h('th', { scope: 'col', text: x }); }))]));
+      var tb = h('tbody');
+      if (!rows.length) tb.appendChild(h('tr', null, [h('td', { colspan: String(head.length), class: 'empty-row', text: 'موردی با این عنوان پیدا نشد.' })]));
+      rows.forEach(function (it) {
+        var img = isP ? it.data.cover : it.data.image;
+        var thumb = img ? h('img', { class: 'thumb', src: img, alt: '', loading: 'lazy' }) : h('span', { class: 'thumb ph' }, [ico('image')]);
+        var main = h('td', { class: 'c-main' }, [h('div', { class: 'cell-main' }, [thumb, h('div', { class: 'cell-text' }, [
+          h('strong', { text: it.data.title }), h('small', { dir: 'ltr', text: '/' + (isP ? 'projects' : 'services') + '/' + it.key })])])]);
+        var cells = [main];
+        if (isP) { cells.push(h('td', { 'data-label': 'دسته' }, [h('span', { class: 'chip', text: CATS[it.data.category] || it.data.category })])); cells.push(h('td', { 'data-label': 'تاریخ', text: it.data.date })); }
+        else cells.push(h('td', { 'data-label': 'ترتیب', text: String(it.data.order) }));
+        cells.push(h('td', { 'data-label': 'وضعیت' }, [h('span', { class: 'tag' + (it.src === 'baked' ? '' : ' hot'), text: SRC[it.src] || '' })]));
+        cells.push(h('td', { class: 'c-act' }, [h('div', { class: 'acts' }, [
+          h('button', { type: 'button', class: 'icon-btn', title: 'ویرایش', 'aria-label': 'ویرایش ' + it.data.title, onclick: function () { openEditor(type, { isNew: false, type: type, lang: lang, item: it }); } }, [ico('edit')]),
+          h('button', { type: 'button', class: 'icon-btn danger', title: 'حذف', 'aria-label': 'حذف ' + it.data.title, onclick: function () {
             if (!confirm('«' + it.data.title + '» حذف شود؟')) return;
             req('item_delete', { json: { type: type, lang: lang, key: it.key } }).then(function (d) {
               if (!d.ok) { toast(errText(d.error), true); return; }
               toast('حذف شد.'); loadItems().then(render);
             });
-          } })
-        ]),
-        h('p', { class: 'muted', style: 'margin:.2rem 0 0', text: sub + ' · /' + (type === 'project' ? 'projects' : 'services') + '/' + it.key })
-      ]));
-    });
+          } }, [ico('trash')])
+        ])]));
+        tb.appendChild(h('tr', null, cells));
+      });
+      table.appendChild(tb);
+      card.appendChild(h('div', { class: 'table-wrap' }, [table]));
+    }
+    q.addEventListener('input', drawRows);
+    drawRows();
     var gone = (itemsData.removed || []).filter(function (x) { return x.type === type && x.lang === lang; });
     if (gone.length) {
       box.appendChild(h('h3', { text: 'حذف‌شده‌ها', style: 'margin-top:1.6rem' }));
@@ -452,38 +481,44 @@
     var d = JSON.parse(JSON.stringify(it.data));
     var rtl = ed.lang === 'fa' ? 'rtl' : 'ltr';
     setHeader((ed.isNew ? 'افزودن ' : 'ویرایش ') + (isP ? 'پروژه' : 'خدمت') + ' (' + (ed.lang === 'fa' ? 'فارسی' : 'انگلیسی') + ')');
+    var cur = box;
+    function section(title) { cur = h('section', { class: 'card ed-card' }, [h('h3', { text: title })]); box.appendChild(cur); return cur; }
     function txt(label, val, onInput, area, dirx) {
       var el = area ? h('textarea', { rows: String(area), dir: dirx || rtl }) : h('input', { type: 'text', dir: dirx || rtl });
       el.value = val; el.addEventListener('input', function () { onInput(el.value); });
-      box.appendChild(h('label', { text: label })); box.appendChild(el); return el;
+      cur.appendChild(h('label', { text: label })); cur.appendChild(el); return el;
     }
+    section('اطلاعات اصلی');
     var slug = it.key || (isP ? 'project-' : 'service-') + Date.now().toString(36);
     if (ed.isNew) {
       txt('آدرس صفحه (حروف کوچک انگلیسی، عدد و -)', slug, function (v) { slug = v.trim(); }, 0, 'ltr');
-      box.appendChild(h('p', { class: 'muted', text: 'آدرس صفحه بعد از ساخت قابل تغییر نیست. اگر همین مورد نسخه‌ی زبان دیگر دارد، همان آدرس را برایش بنویسید.' }));
-    } else box.appendChild(h('p', { class: 'muted', text: 'آدرس صفحه: /' + (isP ? 'projects' : 'services') + '/' + slug }));
+      cur.appendChild(h('p', { class: 'muted', text: 'آدرس صفحه بعد از ساخت قابل تغییر نیست. اگر همین مورد نسخه‌ی زبان دیگر دارد، همان آدرس را برایش بنویسید.' }));
+    } else cur.appendChild(h('p', { class: 'muted', dir: 'ltr', style: 'text-align:start', text: 'آدرس صفحه: /' + (isP ? 'projects' : 'services') + '/' + slug }));
     txt('عنوان', d.title, function (v) { d.title = v; });
     txt('توضیح کوتاه (زیر عنوان و برای گوگل)', d.excerpt, function (v) { d.excerpt = v; }, 3);
     if (isP) {
+      section('جزئیات');
       var dt = h('input', { type: 'date' }); dt.value = d.date; dt.addEventListener('input', function () { d.date = dt.value; });
-      box.appendChild(h('label', { text: 'تاریخ (میلادی)' })); box.appendChild(dt);
       var cat = h('select', null, itemsData.categories.map(function (c) { var o = h('option', { value: c, text: CATS[c] || c }); if (c === d.category) o.selected = true; return o; }));
       cat.addEventListener('input', function () { d.category = cat.value; });
-      box.appendChild(h('label', { text: 'دسته' })); box.appendChild(cat);
-      var alt = h('input', { type: 'text', dir: rtl }); alt.value = d.coverAlt; alt.addEventListener('input', function () { d.coverAlt = alt.value; });
-      box.appendChild(imageField('تصویر شاخص (اختیاری)', function () { return d.cover; }, function (u) { d.cover = u; }, alt));
+      cur.appendChild(h('div', { class: 'ed-grid' }, [h('div', null, [h('label', { text: 'تاریخ (میلادی)' }), dt]), h('div', null, [h('label', { text: 'دسته' }), cat])]));
       txt('آدرس ویدیو (یوتیوب، آپارات یا ویمیو؛ اختیاری)', d.video, function (v) { d.video = v.trim(); }, 0, 'ltr');
-      var fe = h('input', { type: 'checkbox', style: 'width:auto' }); fe.checked = !!d.featured; fe.addEventListener('change', function () { d.featured = fe.checked; });
-      box.appendChild(h('label', { style: 'display:flex;gap:.5rem;align-items:center' }, [fe, h('span', { text: 'نمایش در «پروژه‌های منتخب» صفحه اول' })]));
+      var fe = h('input', { type: 'checkbox' }); fe.checked = !!d.featured; fe.addEventListener('change', function () { d.featured = fe.checked; });
+      cur.appendChild(h('label', { class: 'switch' }, [fe, h('span', { class: 'switch-track' }), h('span', { text: 'نمایش در «پروژه‌های منتخب» صفحه اول' })]));
+      section('تصویر شاخص');
+      var alt = h('input', { type: 'text', dir: rtl }); alt.value = d.coverAlt; alt.addEventListener('input', function () { d.coverAlt = alt.value; });
+      cur.appendChild(imageField('تصویر (اختیاری)', function () { return d.cover; }, function (u) { d.cover = u; }, alt));
     } else {
+      section('جزئیات');
       var ord = h('input', { type: 'number', min: '0', max: '9999', dir: 'ltr' }); ord.value = d.order; ord.addEventListener('input', function () { d.order = parseInt(ord.value, 10) || 0; });
-      box.appendChild(h('label', { text: 'ترتیب نمایش (عدد کوچک‌تر بالاتر)' })); box.appendChild(ord);
+      cur.appendChild(h('label', { text: 'ترتیب نمایش (عدد کوچک‌تر بالاتر)' })); cur.appendChild(ord);
+      section('تصویر خدمت');
       var alt2 = h('input', { type: 'text', dir: rtl }); alt2.value = d.imageAlt; alt2.addEventListener('input', function () { d.imageAlt = alt2.value; });
-      box.appendChild(imageField('تصویر خدمت', function () { return d.image; }, function (u) { d.image = u; }, alt2));
+      cur.appendChild(imageField('تصویر', function () { return d.image; }, function (u) { d.image = u; }, alt2));
     }
     var body = it.body || '';
     var mode = 'visual';
-    box.appendChild(h('label', { text: 'متن کامل صفحه' }));
+    section('متن کامل صفحه');
     var ta = h('textarea', { rows: '16', dir: rtl, hidden: true });
     ta.value = body;
     ta.addEventListener('input', function () { body = ta.value; });
@@ -552,8 +587,8 @@
         loadVisual();
       }
     } });
-    box.appendChild(bar); box.appendChild(area); box.appendChild(ta); box.appendChild(imgFile);
-    box.appendChild(h('div', { class: 'actions' }, [modeBtn]));
+    cur.appendChild(bar); cur.appendChild(area); cur.appendChild(ta); cur.appendChild(imgFile);
+    cur.appendChild(h('div', { class: 'actions' }, [modeBtn]));
     loadVisual();
     var pv = h('div', { hidden: true });
     var acts = [
@@ -572,7 +607,7 @@
       if (!confirm('تغییرات این مورد از بین می‌رود و نسخه‌ی اصلی برمی‌گردد. ادامه می‌دهید؟')) return;
       req('item_reset', { json: { type: type, lang: ed.lang, key: slug } }).then(function (r5) { if (!r5.ok) { toast(errText(r5.error), true); return; } toast('برگشت.'); loadItems().then(closeEditor); });
     } }));
-    box.appendChild(h('div', { class: 'actions', style: 'margin-top:1.4rem' }, acts));
+    box.appendChild(h('div', { class: 'ed-bar' }, acts));
   }
 
   function renderTools() {
