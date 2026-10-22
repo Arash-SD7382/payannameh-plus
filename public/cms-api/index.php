@@ -20,7 +20,7 @@ switch ($a) {
     case 'me': {
         $u = cms_user();
         if (!$u) json_out(['auth' => false]);
-        json_out(['auth' => true, 'user' => $u['username'], 'csrf' => cms_csrf()]);
+        json_out(['auth' => true, 'user' => $u['username'], 'title' => (string) $u['title'], 'csrf' => cms_csrf()]);
     }
 
     case 'login': {
@@ -50,7 +50,8 @@ switch ($a) {
         session_regenerate_id(true);
         $_SESSION['uid'] = (int) $row['id'];
         $_SESSION['csrf'] = bin2hex(random_bytes(24));
-        json_out(['auth' => true, 'user' => $username, 'csrf' => $_SESSION['csrf']]);
+        $me2 = cms_user();
+        json_out(['auth' => true, 'user' => $username, 'title' => $me2 ? (string) $me2['title'] : '', 'csrf' => $_SESSION['csrf']]);
     }
 
     case 'logout': {
@@ -138,10 +139,25 @@ switch ($a) {
 
     case 'users': {
         $u = cms_require_auth(false);
-        $rows = cms_db()->query('SELECT id, username, created_at FROM cms_users ORDER BY id')->fetchAll();
+        $rows = cms_db()->query('SELECT id, username, title, created_at FROM cms_users ORDER BY id')->fetchAll();
         $out = [];
-        foreach ($rows as $r) $out[] = ['id' => (int) $r['id'], 'username' => $r['username'], 'created' => $r['created_at'], 'self' => (int) $r['id'] === (int) $u['id']];
+        foreach ($rows as $r) $out[] = ['id' => (int) $r['id'], 'username' => $r['username'], 'title' => (string) $r['title'], 'created' => $r['created_at'], 'self' => (int) $r['id'] === (int) $u['id']];
         json_out(['users' => $out]);
+    }
+
+    case 'user_title': {
+        // the label shown under a person's name (for example "site designer"); cosmetic, so no password needed
+        need_post();
+        cms_require_auth(true);
+        $in = cms_input();
+        $id = isset($in['id']) ? (int) $in['id'] : 0;
+        $title = isset($in['title']) && is_string($in['title']) ? trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $in['title'])) : '';
+        if (cms_len($title) > 40) json_out(['error' => 'bad_title_user'], 400);
+        $st = cms_db()->prepare('SELECT id FROM cms_users WHERE id = ?');
+        $st->execute([$id]);
+        if (!$st->fetch()) json_out(['error' => 'not_found'], 404);
+        cms_db()->prepare('UPDATE cms_users SET title = ? WHERE id = ?')->execute([$title, $id]);
+        json_out(['ok' => true, 'title' => $title]);
     }
 
     case 'username': {

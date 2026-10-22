@@ -2,7 +2,7 @@
   'use strict';
 
   var API = '/cms-api/';
-  var csrf = '', me = '';
+  var csrf = '', me = '', myTitle = '';
   var schema = null;                       // { groups, defaults:{fa,en} } built with the site
   var saved = { fa: {}, en: {}, all: {} }; // what the server has
   var pending = {};                        // "lang|key" -> string (new text) or null (back to default)
@@ -28,6 +28,7 @@
     cannot_delete_self: 'حساب خودتان را نمی‌شود حذف کرد.',
     bad_backup: 'این فایل، فایل پشتیبان این سایت نیست.',
     network: 'ارتباط با سرور برقرار نشد. اینترنت را بررسی کنید.',
+    bad_title_user: 'لقب از ۴۰ نویسه بیشتر است.',
     bad_title: 'عنوان خالی است یا از ۲۰۰ نویسه بیشتر است.',
     bad_excerpt: 'توضیح کوتاه خالی است یا از ۶۰۰ نویسه بیشتر است.',
     bad_date: 'تاریخ درست نیست.',
@@ -131,7 +132,7 @@
     e.preventDefault();
     $('login-msg').textContent = '';
     req('login', { json: { username: $('lu').value, password: $('lp').value } }).then(function (d) {
-      if (d.auth) { csrf = d.csrf; me = d.user; $('lp').value = ''; boot(); }
+      if (d.auth) { csrf = d.csrf; me = d.user; myTitle = d.title || ''; $('lp').value = ''; boot(); }
       else $('login-msg').textContent = errText(d.error);
     });
   });
@@ -673,7 +674,17 @@
             if (d.ok) { toast('حساب حذف شد.'); loadUsers(); } else toast(errText(d.error), true);
           });
         } }));
-        usersBox.appendChild(h('div', { class: 'field' }, [h('div', { class: 'row' }, kids)]));
+        var ti = h('input', { type: 'text', maxlength: '40', placeholder: 'لقب یا نقش، مثلاً طراح سایت', 'aria-label': 'لقب ' + x.username, style: 'flex:1;min-width:10rem' });
+        ti.value = x.title || '';
+        var titleRow = h('div', { class: 'row', style: 'margin-top:.5rem' }, [h('span', { class: 'muted', text: 'لقب:', style: 'margin:0' }), ti,
+          h('button', { type: 'button', class: 'reset', text: 'ذخیره لقب', onclick: function () {
+            req('user_title', { json: { id: x.id, title: ti.value } }).then(function (d) {
+              if (!d.ok) { toast(errText(d.error), true); return; }
+              x.title = d.title; toast('لقب ذخیره شد.');
+              if (x.self) { myTitle = d.title; $('me-title').textContent = myTitle || 'مدیر سایت'; }
+            });
+          } })]);
+        usersBox.appendChild(h('div', { class: 'field' }, [h('div', { class: 'row' }, kids), titleRow]));
       });
       usersBox.appendChild(h('h3', { text: 'افزودن حساب جدید', style: 'margin-top:1.2rem' }));
       var an = h('input', { type: 'text', dir: 'ltr', autocomplete: 'off' });
@@ -725,11 +736,6 @@
     if (!out && k === 'faqlist') out = { label: 'فهرست سؤالات متداول', group: 'faq' };
     return out || { label: k, group: 'hero' };
   }
-  function greeting() {
-    var hr = new Date().getHours();
-    return hr < 5 ? 'شب بخیر' : hr < 11 ? 'صبح بخیر' : hr < 16 ? 'روز بخیر' : hr < 19 ? 'عصر بخیر' : 'شب بخیر';
-  }
-
   function barChart(months) {
     var W = 600, H = 220, padB = 34, padT = 22, max = 1;
     months.forEach(function (m) { if (m.n > max) max = m.n; });
@@ -803,7 +809,7 @@
     var d = new Date(), dateTxt = '';
     try { dateTxt = d.toLocaleDateString('fa-IR-u-ca-persian', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); } catch (e) {}
     box.appendChild(h('section', { class: 'dash-hero' }, [
-      h('div', null, [h('small', { class: 'dash-date', text: dateTxt }), h('h2', { text: greeting() + '، ' + me }), h('p', { class: 'muted', text: 'نگاهی سریع به وضعیت سایت پایان‌نامه پلاس' })]),
+      h('div', null, [h('small', { class: 'dash-date', text: dateTxt }), h('h2', { text: 'سلام رئیس' }), h('p', { class: 'muted', text: 'نگاهی سریع به وضعیت سایت پایان‌نامه پلاس' })]),
       h('div', { class: 'dash-actions' }, [
         h('button', { type: 'button', class: 'btn btn-primary', onclick: function () { go('items-project'); openEditor('project', { isNew: true, type: 'project', lang: 'fa' }); } }, [ico('plus'), h('span', { text: 'افزودن پروژه' })]),
         h('button', { type: 'button', class: 'btn btn-secondary', onclick: function () { go('items-service'); openEditor('service', { isNew: true, type: 'service', lang: 'fa' }); } }, [ico('plus'), h('span', { text: 'افزودن خدمت' })]),
@@ -958,14 +964,14 @@
     }).then(function () {
       $('login').hidden = true; $('app').hidden = false;
       navN = 0; section = 'dashboard'; try { history.replaceState({ n: 0, section: 'dashboard' }, ''); } catch (e) {}
-      $('me-name').textContent = me; $('me-avatar').textContent = (me || '?').charAt(0);
+      $('me-name').textContent = me; $('me-title').textContent = myTitle || 'مدیر سایت'; $('me-avatar').textContent = (me || '?').charAt(0);
       render();
       req('reapply', { json: {} }); // makes sure the saved titles and FAQ are in the page files, even after a fresh upload of the site
     }).catch(function () { toast(errText('network'), true); });
   }
 
   req('me').then(function (d) {
-    if (d.auth) { csrf = d.csrf; me = d.user; boot(); }
+    if (d.auth) { csrf = d.csrf; me = d.user; myTitle = d.title || ''; boot(); }
     else if (d.error === 'not_installed') { showLogin(); $('login-msg').textContent = errText('not_installed'); }
     else showLogin();
   });

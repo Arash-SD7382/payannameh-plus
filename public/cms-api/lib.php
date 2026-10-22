@@ -40,6 +40,8 @@ function cms_db() {
         json_out(['error' => 'db_connect'], 500);
     }
     try { $pdo->exec(cms_items_schema()); $pdo->exec(cms_hits_schema()); } catch (Exception $e) { /* older installs get the new tables on first use */ }
+    // older installs get the account "title" column (shown under the name in the panel)
+    try { if (!$pdo->query("SHOW COLUMNS FROM cms_users LIKE 'title'")->fetch()) $pdo->exec("ALTER TABLE cms_users ADD COLUMN title VARCHAR(60) NOT NULL DEFAULT ''"); } catch (Exception $e) { }
     return $pdo;
 }
 
@@ -117,7 +119,7 @@ function cms_session() {
 function cms_user() {
     cms_session();
     if (empty($_SESSION['uid'])) return null;
-    $st = cms_db()->prepare('SELECT id, username FROM cms_users WHERE id = ?');
+    $st = cms_db()->prepare('SELECT id, username, title FROM cms_users WHERE id = ?');
     $st->execute([$_SESSION['uid']]);
     $u = $st->fetch();
     return $u ? $u : null;
