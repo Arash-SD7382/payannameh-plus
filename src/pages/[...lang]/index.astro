@@ -19,6 +19,7 @@ const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity
 <section class="hero"><div class="wrap">
 <div class="rule"></div><h1 data-cms="heroTitle">{t.heroTitle}</h1><p data-cms="heroText">{t.heroText}</p>
 <div class="actions"><a class="btn" href={href(lang, '/projects')} data-cms="viewProjects">{t.viewProjects}</a><a class="btn ghost" href={href(lang, '/services')} data-cms="ourServices">{t.ourServices}</a></div>
+<p class="hero-note" data-cms="heroFree">{t.heroFree}</p>
 <div class="stats" style="margin-top:2.5rem">{t.stats.map(([v, l], i) => <div class="stat"><strong dir="ltr" data-cms={`stats.${i}.0`}>{v}</strong><span data-cms={`stats.${i}.1`}>{l}</span></div>)}</div>
 </div></section>
 <section class="soft"><div class="wrap" style="max-width:820px"><h2>{t.nav.about}</h2><p class="prose" style="font-size:1.1rem" data-cms="introText">{t.introText}</p>

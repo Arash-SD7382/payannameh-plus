@@ -91,7 +91,11 @@ export function buildGroups(): Group[] {
     { id: 'about', title: 'درباره ما', fields: [
       f('aboutTitle', 'عنوان صفحه'), f('about1', 'پاراگراف اول', 'textarea'), f('about2', 'پاراگراف دوم', 'textarea'),
     ] },
-    { id: 'contact', title: 'صفحه تماس', fields: [f('contactUs', 'عنوان صفحه'), f('contactIntro', 'متن معرفی', 'textarea')] },
+    { id: 'contact', title: 'صفحه تماس', fields: [f('contactUs', 'عنوان صفحه'), f('contactIntro', 'متن معرفی', 'textarea'),
+      f('hoursTitle', 'کارت ساعات کاری: عنوان'), f('hoursText', 'کارت ساعات کاری: متن'),
+      f('replyTitle', 'کارت پاسخ‌گویی: عنوان'), f('replyText', 'کارت پاسخ‌گویی: متن', 'textarea'),
+      f('freeTitle', 'کارت مشاوره رایگان: عنوان'), f('freeText', 'کارت مشاوره رایگان: متن', 'textarea'),
+      f('heroFree', 'خط زیر دکمه‌های صفحه اول'), f('footHours', 'ساعات کاری در فوتر')] },
     { id: 'team', title: 'اطلاعات تماس تیم', hint: 'شماره‌ها و آی‌دی‌ها در بالا، پایین سایت، صفحه تماس و صفحه‌ی خدمات عوض می‌شوند. شماره و آی‌دی برای هر دو زبان یکی است، فقط نام جداگانه است.', fields: people },
     { id: 'nav', title: 'منوی بالا و عنوان‌های فوتر', fields: nav },
     { id: 'meta', title: 'عنوان و توضیح صفحه‌ها در گوگل', hint: 'همان چیزی که در نتایج جستجوی گوگل و پیش‌نمایش لینک دیده می‌شود. توضیح حدود ۱۲۰ تا ۱۶۰ نویسه خوب است.', fields: meta },

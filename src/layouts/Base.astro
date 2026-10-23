@@ -42,7 +42,7 @@ const switchTo = alt || href(other, '/');
 <footer class="site"><div class="wrap">
 <div><h2>{t.brand}</h2><p data-cms="tagline">{t.tagline}</p></div>
 <div><h2 data-cms="explore">{t.explore}</h2><ul>{links.map(([n, p]) => <li><a href={href(lang, p)} data-cms={`nav.${p.slice(1)}`}>{n}</a></li>)}</ul></div>
-<div><h2 data-cms="contact">{t.contact}</h2><ul>{team.map((p, i) => <li><strong data-cms={`team.${i}.name`}>{p[lang]}</strong><br><a class="tel" href={`tel:${p.phone}`} data-ti={i} data-ck="phone"><bdi dir="ltr" data-ti={i} data-ct="phone">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" idx={i} noPhone={true} /></li>)}</ul></div>
+<div><h2 data-cms="contact">{t.contact}</h2><p class="foot-hours" data-cms="footHours">{t.footHours}</p><ul>{team.map((p, i) => <li><strong data-cms={`team.${i}.name`}>{p[lang]}</strong><br><a class="tel" href={`tel:${p.phone}`} data-ti={i} data-ck="phone"><bdi dir="ltr" data-ti={i} data-ct="phone">{p.phone}</bdi></a><br><ContactLinks person={p} who={p[lang]} size="sm" idx={i} noPhone={true} /></li>)}</ul></div>
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. <span data-cms="rights">{t.rights}</span></small></div></footer>
 <script is:inline>
 (function(){
