@@ -33,10 +33,14 @@ const switchTo = alt || href(other, '/');
 <body>
 <header class="site"><div class="wrap">
 <a class="brand" href={href(lang, '/')}><img src="/images/logo.png" alt={t.brand} width="52" height="52" data-cms-logo></a>
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="drawer">
+<div class="drawer-head"><span class="dh-t">{t.brand}</span><button type="button" class="icon-btn dh-x" id="drawer-x" aria-label={t.closeMenu}><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 <nav class="main" id="nav" aria-label="Main">{links.map(([n, p]) => <a href={href(lang, p)} aria-current={path.startsWith(p) ? 'page' : undefined} data-cms={`nav.${p.slice(1)}`}>{n}</a>)}</nav>
-<a class="lang" href={switchTo} hreflang={other} lang={other}>{t.switch}</a>
-<label class="theme nt" for="theme"><span class="theme__toggle-wrap"><input id="theme" class="theme__toggle" type="checkbox" role="switch" name="theme" aria-label="Toggle dark mode" autocomplete="off"><span class="theme__icon"><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span></span></span></label>
-<button class="icon-btn hb" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span class="hb-i" aria-hidden="true"><span class="hb-l"></span><span class="hb-l"></span><span class="hb-l"></span></span></button>
+<div class="drawer-tools"><div class="dt-row"><span class="dt-label">{t.drawerLang}</span><a class="lang" href={switchTo} hreflang={other} lang={other}>{t.switch}</a></div>
+<div class="dt-row"><span class="dt-label">{t.drawerTheme}</span><label class="theme nt" for="theme"><span class="theme__toggle-wrap"><input id="theme" class="theme__toggle" type="checkbox" role="switch" name="theme" aria-label="Toggle dark mode" autocomplete="off"><span class="theme__icon"><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span><span class="theme__icon-part"></span></span></span></label></div></div>
+</div>
+<button class="icon-btn hb" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="drawer"><span class="hb-i" aria-hidden="true"><span class="hb-l"></span><span class="hb-l"></span><span class="hb-l"></span></span></button>
 </div></header>
 <main><slot /></main>
 <footer class="site"><div class="foot-waves" aria-hidden="true"><svg class="fw fw1" viewBox="0 0 2400 80" preserveAspectRatio="none" focusable="false"><path d="M0 40C200 0 400 0 600 40S1000 80 1200 40S1600 0 1800 40S2200 80 2400 40V80H0Z" fill="rgba(0,187,240,.22)"/></svg><svg class="fw fw2" viewBox="0 0 2400 80" preserveAspectRatio="none" focusable="false"><path d="M0 40C200 0 400 0 600 40S1000 80 1200 40S1600 0 1800 40S2200 80 2400 40V80H0Z" fill="rgba(0,87,146,.55)"/></svg><svg class="fw fw3" viewBox="0 0 2400 80" preserveAspectRatio="none" focusable="false"><path d="M0 40C200 0 400 0 600 40S1000 80 1200 40S1600 0 1800 40S2200 80 2400 40V80H0Z" fill="#00204a"/></svg></div>
@@ -47,14 +51,26 @@ const switchTo = alt || href(other, '/');
 </div><div class="wrap" style="margin-top:1.5rem;display:block"><small>© {new Date().getFullYear()} {t.brand}. <span data-cms="rights">{t.rights}</span></small></div></footer>
 <script is:inline>
 (function(){
-var m=document.getElementById('menu-btn'),n=document.getElementById('nav');
-var y0=0;
-function setMenu(o){if(o)y0=window.scrollY;n.classList.toggle('open',o);m.setAttribute('aria-expanded',o)}
-window.addEventListener('scroll',function(){if(n.classList.contains('open')&&Math.abs(window.scrollY-y0)>12)setMenu(false)},{passive:true});
-m.addEventListener('click',function(e){e.stopPropagation();setMenu(!n.classList.contains('open'))});
-document.addEventListener('click',function(e){if(n.classList.contains('open')&&!n.contains(e.target))setMenu(false)});
-document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});
-n.addEventListener('click',function(e){if(e.target.closest('a'))setMenu(false)});
+var m=document.getElementById('menu-btn'),dr=document.getElementById('drawer'),sc=document.getElementById('scrim'),x=document.getElementById('drawer-x'),root=document.documentElement,mob=matchMedia('(max-width:760px)');
+function isOpen(){return dr.classList.contains('open')}
+function setMenu(o){
+if(o===isOpen())return;
+dr.classList.toggle('open',o);sc.classList.toggle('open',o);root.classList.toggle('menu-open',o);m.setAttribute('aria-expanded',o);
+if(o){x.focus({preventScroll:true})}else if(dr.contains(document.activeElement)){m.focus({preventScroll:true})}
+}
+m.addEventListener('click',function(){setMenu(!isOpen())});
+sc.addEventListener('click',function(){setMenu(false)});
+x.addEventListener('click',function(){setMenu(false)});
+dr.addEventListener('click',function(e){if(e.target.closest('nav a, a.lang'))setMenu(false)});
+document.addEventListener('keydown',function(e){
+if(!isOpen())return;
+if(e.key==='Escape'){setMenu(false);return}
+if(e.key==='Tab'){var f=dr.querySelectorAll('a[href],button,input:not([disabled])');if(!f.length)return;var a=f[0],z=f[f.length-1];
+if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+});
+function onMq(){if(!mob.matches)setMenu(false)}
+if(mob.addEventListener)mob.addEventListener('change',onMq);
+window.addEventListener('pageshow',function(){setMenu(false)});
 var tg=document.getElementById('theme'),tl=tg.closest('label'),dd=document.documentElement,mq=matchMedia('(prefers-color-scheme:dark)');
 function curTheme(){return dd.dataset.theme||(mq.matches?'dark':'light')}
 function syncTheme(){tg.checked=curTheme()==='dark'}
